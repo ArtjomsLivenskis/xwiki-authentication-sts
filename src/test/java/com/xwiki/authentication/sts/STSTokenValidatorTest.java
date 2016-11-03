@@ -25,6 +25,7 @@
 package com.xwiki.authentication.sts;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.io.FileUtils;
 
-import junit.framework.Assert;
+//import junit.framework.Assert;
+import org.junit.Assert;
+import org.junit.Before;
+
 import junit.framework.TestCase;
 
 public class STSTokenValidatorTest extends TestCase {
@@ -72,12 +76,12 @@ public class STSTokenValidatorTest extends TestCase {
 
 	}
 
-	public void testPosValidation() throws Exception {
+	@Before
+	public void setUp() {
+
 		// Current settings
-		testFile = new File("testToken.xml");
 		validator.setSubjectDNs(subjectDNs);
 		validator.setAudienceUris(audienceUris);
-		testToken = FileUtils.readFileToString(testFile);
 		validator.setEntityId(entityId);
 		validator.setIssuerDN(issuerDN);
 		validator.setIssuer(issuer);
@@ -85,14 +89,13 @@ public class STSTokenValidatorTest extends TestCase {
 		validator.setValidateExpiration(false);
 		validator.setMaxClockSkew(maxClockSkew);
 		logSettings();
-		// Validate token
-		List<STSClaim> claims = validator.validate(testToken);
-		log.info("Validation passed. Claims: " + claims.size());
-		for (int i = 0; i < claims.size(); i++) {
-			log.debug("claim " + claims.get(i).getClaimType() + ' '
-					+ claims.get(i).getClaimValues());
+		testFile = new File("testToken.xml");
+		try {
+			testToken = FileUtils.readFileToString(testFile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		log.info("testPosValidation passed");
 	}
 
 	public void testNegBadSignature() throws Exception {
@@ -242,6 +245,17 @@ public class STSTokenValidatorTest extends TestCase {
 		} finally {
 			validator.setIssuer(issuer);
 		}
+	}
+
+	public void testPosValidation() throws Exception {
+		// Validate token
+		List<STSClaim> claims = validator.validate(testToken);
+		log.info("Validation passed. Claims: " + claims.size());
+		for (int i = 0; i < claims.size(); i++) {
+			log.debug("claim " + claims.get(i).getClaimType() + ' '
+					+ claims.get(i).getClaimValues());
+		}
+		log.info("testPosValidation passed");
 	}
 
 	public void logSettings() {
