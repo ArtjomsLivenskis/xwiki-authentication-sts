@@ -9,6 +9,7 @@ Federation service is provided using Microsoft technologies, which are briefly d
 
 The following XWiki Class should be created in /xwiki/bin/view/XWiki/XWikiClasses designer:
 
+
 XWiki.STSAuthClass
 with fields:
 * nameid OR personid as String (depending on configuration) 
