@@ -1,0 +1,39 @@
+-------------------------------------------------------------------------------
+Test set: com.xwiki.authentication.sts.STSTokenValidatorTest
+-------------------------------------------------------------------------------
+Tests run: 9, Failures: 0, Errors: 7, Skipped: 0, Time elapsed: 4.108 sec <<< FAILURE!
+testNegWrongSubjectDNs(com.xwiki.authentication.sts.STSTokenValidatorTest)  Time elapsed: 0.003 sec  <<< ERROR!
+java.lang.NullPointerException
+	at com.xwiki.authentication.sts.STSTokenValidator.validate(STSTokenValidator.java:125)
+	at com.xwiki.authentication.sts.STSTokenValidatorTest.testNegWrongSubjectDNs(STSTokenValidatorTest.java:126)
+
+testNegWrongAudience(com.xwiki.authentication.sts.STSTokenValidatorTest)  Time elapsed: 0.001 sec  <<< ERROR!
+java.lang.NullPointerException
+	at com.xwiki.authentication.sts.STSTokenValidator.validate(STSTokenValidator.java:125)
+	at com.xwiki.authentication.sts.STSTokenValidatorTest.testNegWrongAudience(STSTokenValidatorTest.java:145)
+
+testNegWrongEntityId(com.xwiki.authentication.sts.STSTokenValidatorTest)  Time elapsed: 0.001 sec  <<< ERROR!
+java.lang.NullPointerException
+	at com.xwiki.authentication.sts.STSTokenValidator.validate(STSTokenValidator.java:125)
+	at com.xwiki.authentication.sts.STSTokenValidatorTest.testNegWrongEntityId(STSTokenValidatorTest.java:164)
+
+testNegWrongIssuerDN(com.xwiki.authentication.sts.STSTokenValidatorTest)  Time elapsed: 0.001 sec  <<< ERROR!
+java.lang.NullPointerException
+	at com.xwiki.authentication.sts.STSTokenValidator.validate(STSTokenValidator.java:125)
+	at com.xwiki.authentication.sts.STSTokenValidatorTest.testNegWrongIssuerDN(STSTokenValidatorTest.java:181)
+
+testNegWrongDate(com.xwiki.authentication.sts.STSTokenValidatorTest)  Time elapsed: 0 sec  <<< ERROR!
+java.lang.NullPointerException
+	at com.xwiki.authentication.sts.STSTokenValidator.validate(STSTokenValidator.java:125)
+	at com.xwiki.authentication.sts.STSTokenValidatorTest.testNegWrongDate(STSTokenValidatorTest.java:198)
+
+testNegWrongContext(com.xwiki.authentication.sts.STSTokenValidatorTest)  Time elapsed: 0 sec  <<< ERROR!
+java.lang.NullPointerException
+	at com.xwiki.authentication.sts.STSTokenValidator.validate(STSTokenValidator.java:125)
+	at com.xwiki.authentication.sts.STSTokenValidatorTest.testNegWrongContext(STSTokenValidatorTest.java:217)
+
+testNegWrongIssuer(com.xwiki.authentication.sts.STSTokenValidatorTest)  Time elapsed: 0 sec  <<< ERROR!
+java.lang.NullPointerException
+	at com.xwiki.authentication.sts.STSTokenValidator.validate(STSTokenValidator.java:125)
+	at com.xwiki.authentication.sts.STSTokenValidatorTest.testNegWrongIssuer(STSTokenValidatorTest.java:236)
+
