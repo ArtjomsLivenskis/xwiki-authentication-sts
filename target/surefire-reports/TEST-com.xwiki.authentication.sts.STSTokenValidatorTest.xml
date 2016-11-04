@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="9" failures="0" name="com.xwiki.authentication.sts.STSTokenValidatorTest" time="5.16" errors="0" skipped="0">
+<testsuite tests="9" failures="0" name="com.xwiki.authentication.sts.STSTokenValidatorTest" time="4.599" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64"/>
@@ -19,7 +19,7 @@
     <property name="basedir" value="/home/student/workspace/xwiki-authentication-sts"/>
     <property name="java.endorsed.dirs" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/endorsed"/>
     <property name="os.arch" value="amd64"/>
-    <property name="surefire.real.class.path" value="/tmp/surefirebooter2908140514715031526.jar"/>
+    <property name="surefire.real.class.path" value="/tmp/surefirebooter7000605603030802886.jar"/>
     <property name="java.io.tmpdir" value="/tmp"/>
     <property name="line.separator" value="
 "/>
@@ -43,7 +43,7 @@
     <property name="java.vm.specification.version" value="1.8"/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="java.home" value="/usr/lib/jvm/java-8-openjdk-amd64/jre"/>
-    <property name="sun.java.command" value="/tmp/surefirebooter2908140514715031526.jar /tmp/surefire5417013370467022550tmp /tmp/surefire4036194821086906353tmp"/>
+    <property name="sun.java.command" value="/tmp/surefirebooter7000605603030802886.jar /tmp/surefire3132957013346915352tmp /tmp/surefire7106498564156785047tmp"/>
     <property name="java.specification.vendor" value="Oracle Corporation"/>
     <property name="user.language" value="en"/>
     <property name="awt.toolkit" value="sun.awt.X11.XToolkit"/>
@@ -59,13 +59,13 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegBadSignature" time="0.962"/>
-  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongSubjectDNs" time="0.033"/>
-  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongAudience" time="0.033"/>
-  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongEntityId" time="0.11"/>
-  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongIssuerDN" time="0.024"/>
-  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongDate" time="0.041"/>
-  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongContext" time="0.017"/>
-  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongIssuer" time="0.016"/>
-  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testPosValidation" time="0.061"/>
+  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongEntityId" time="0.856"/>
+  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongIssuerDN" time="0.055"/>
+  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongDate" time="0.032"/>
+  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongContext" time="0.018"/>
+  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongIssuer" time="0.087"/>
+  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testPosValidation" time="0.091"/>
+  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegBadSignature" time="0.068"/>
+  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongSubjectDNs" time="0.046"/>
+  <testcase classname="com.xwiki.authentication.sts.STSTokenValidatorTest" name="testNegWrongAudience" time="0.036"/>
 </testsuite>
