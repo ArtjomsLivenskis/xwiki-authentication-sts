@@ -148,5 +148,12 @@ class XWikiSTSAuthenticatorProperties {
 	log.trace("getFieldMapping(): " + val);
 	return val;
     }
+    
+    String getCertFileName(XWikiContext context) {
+	String val = context.getWiki().Param(
+		"xwiki.authentication.sts.cert_filename");
+	log.trace("getCertFileName(): " + val);
+	return val;
+    }
 
 }
