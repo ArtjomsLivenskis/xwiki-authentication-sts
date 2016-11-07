@@ -1,28 +1,5 @@
-/*
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- * 
- * Part of the code in this file is copied from: https://github.com/auth10/auth10-java
- * which is based on Microsoft libraries in: https://github.com/WindowsAzure/azure-sdk-for-java-samples. 
- * 
- */
-
 package com.xwiki.authentication.sts;
+
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,26 +8,19 @@ import java.io.IOException;
 import java.net.URI;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.security.cert.X509Certificate;
-
-import com.xwiki.authentication.sts.STSClaim;
-import com.xwiki.authentication.sts.STSException;
-import com.xwiki.authentication.sts.STSTokenValidator;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.io.FileUtils;
-
-//import junit.framework.Assert;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Before;
+import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class STSTokenValidatorTest extends TestCase {
+public class STSTokenValidatorTest {
 	private static Log log = LogFactory.getLog(STSTokenValidatorTest.class);
 	static File testFile;
 	static STSTokenValidator validator;
@@ -64,8 +34,8 @@ public class STSTokenValidatorTest extends TestCase {
 	static boolean validateExpiration;
 	static int maxClockSkew = 60000;
 
-	public STSTokenValidatorTest(String name) throws Exception {
-		super(name);
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
 		validator = new STSTokenValidator();
 		subjectDNs = new ArrayList<String>();
 		audienceUris = new ArrayList<URI>();
@@ -84,7 +54,7 @@ public class STSTokenValidatorTest extends TestCase {
 	@Before
 	public void setUp() {
 
-		// Current settings
+		// validator prefilling with common test settings
 		validator.setSubjectDNs(subjectDNs);
 		validator.setAudienceUris(audienceUris);
 		validator.setEntityId(entityId);
@@ -93,33 +63,16 @@ public class STSTokenValidatorTest extends TestCase {
 		validator.setContext(context);
 		validator.setValidateExpiration(false);
 		validator.setMaxClockSkew(maxClockSkew);
-		logSettings();
 		testFile = new File("testToken.xml");
-
-		FileInputStream fr;
-		try {
-			fr = new FileInputStream("VISS.LVP.STS.cer");
-			CertificateFactory cf;
-			try {
-				cf = CertificateFactory.getInstance("X509");
-				validator.setCertificate((X509Certificate) cf.generateCertificate(fr));
-			} catch (CertificateException e) {
-				System.out.println();
-				System.out.println("CertificateException!!!!!!!!!!!! " + e);
-			}
-		} catch (FileNotFoundException e) {
-			System.out.println();
-			System.out.println("FileNotFoundException!!!!!!!!!!!!!!!! " + e);
-		}
 
 		try {
 			testToken = FileUtils.readFileToString(testFile);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 
+	@Test
 	public void testNegBadSignature() throws Exception {
 		// Current settings
 		File tamperedFile = new File("tamperedToken.xml");
@@ -140,6 +93,7 @@ public class STSTokenValidatorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNegWrongSubjectDNs() throws Exception {
 		// Current settings
 		List<String> wrongIssuers = new ArrayList<String>();
@@ -159,6 +113,7 @@ public class STSTokenValidatorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNegWrongAudience() throws Exception {
 		// Current settings
 		List<URI> wrongAudienceUris = new ArrayList<URI>();
@@ -179,6 +134,7 @@ public class STSTokenValidatorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNegWrongEntityId() throws Exception {
 		// Current settings
 		validator.setEntityId("WrongEntityId");
@@ -196,6 +152,7 @@ public class STSTokenValidatorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNegWrongIssuerDN() throws Exception {
 		// Current settings
 		validator.setIssuerDN("WrongIssuerDN");
@@ -213,6 +170,7 @@ public class STSTokenValidatorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNegWrongDate() throws Exception {
 		// Current settings
 		validator.setValidateExpiration(true);
@@ -230,6 +188,7 @@ public class STSTokenValidatorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNegWrongContext() throws Exception {
 		// Current settings
 		validator.setContext("WrongContext");
@@ -249,6 +208,7 @@ public class STSTokenValidatorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNegWrongIssuer() throws Exception {
 		// Current settings
 		validator.setIssuer("WrongIssuer");
@@ -266,25 +226,51 @@ public class STSTokenValidatorTest extends TestCase {
 		}
 	}
 
-	public void testPosValidation() throws Exception {
+	@Test
+	public void testPosValidationUsingMetadata() throws Exception {
 		// Validate token
 		List<STSClaim> claims = validator.validate(testToken);
 		log.info("Validation passed. Claims: " + claims.size());
 		for (int i = 0; i < claims.size(); i++) {
 			log.debug("claim " + claims.get(i).getClaimType() + ' ' + claims.get(i).getClaimValues());
 		}
-		log.info("testPosValidation passed");
+		log.info("testPosValidationUsingMetadata passed");
 	}
 
-	public void logSettings() {
-		log.info("Test file: " + testFile.getAbsolutePath());
-		log.info("Context: " + context);
-		log.info("Issuer: " + issuer);
-		log.info("EntityID: " + entityId);
-		log.info("IssuerDN: " + issuerDN);
-		log.debug("============= Test token ===========\n" + testToken + "\n=============");
-		log.info("AudienceUris: " + audienceUris);
-		log.info("TrustedSubjectDNs: " + subjectDNs);
+	@Test
+	public void testPosValidationUsingCertificate() throws Exception {
+
+		validator.setCertificate(getCert("VISS.LVP.STS.cer"));
+		// Validate token
+		List<STSClaim> claims = validator.validate(testToken);
+		log.info("Validation passed. Claims: " + claims.size());
+		for (int i = 0; i < claims.size(); i++) {
+			log.debug("claim " + claims.get(i).getClaimType() + ' ' + claims.get(i).getClaimValues());
+		}
+		log.info("testPosValidationUsingCertificate passed");
+	}
+
+	@Test
+	public void testPosValidationUsingWrongCertificate() throws Exception {
+
+		validator.setCertificate(getCert("VISS.LVP.STS.wrong.cer"));
+		// Validate token
+		try {
+			validator.validate(testToken);
+		} catch (STSException e) {
+			log.info("testPosValidationUsingWrongCertificate passed");
+		}
+	}
+
+	private X509Certificate getCert(String filename) throws FileNotFoundException, CertificateException {
+
+		FileInputStream fr;
+		X509Certificate cer = null;
+		fr = new FileInputStream(filename);
+		CertificateFactory cf;
+		cf = CertificateFactory.getInstance("X509");
+		cer = (X509Certificate) cf.generateCertificate(fr);
+		return cer;
 	}
 
 }

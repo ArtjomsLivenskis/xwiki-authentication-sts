@@ -74,7 +74,7 @@
   <classpathentry kind="var" path="M2_REPO/com/google/googleapi/UNKNOWN/googleapi-UNKNOWN-xwiki.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/apache/portals/graffito-jcr-mapping/1.0-a1-amelentev-dev/graffito-jcr-mapping-1.0-a1-amelentev-dev.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/codehaus/groovy/groovy-all/1.7.3/groovy-all-1.7.3.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/hamcrest/hamcrest-library/1.1/hamcrest-library-1.1.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/hibernate/hibernate/3.2.6.ga/hibernate-3.2.6.ga.jar"/>
   <classpathentry kind="var" path="M2_REPO/net/sourceforge/htmlcleaner/htmlcleaner/2.1/htmlcleaner-2.1.jar"/>
@@ -110,7 +110,7 @@
   <classpathentry kind="var" path="M2_REPO/jtidy/jtidy/8.0-20060801.131059-3-dev/jtidy-8.0-20060801.131059-3-dev.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/openoffice/juh/3.1.0/juh-3.1.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/slf4j/jul-to-slf4j/1.6.1/jul-to-slf4j-1.6.1.jar"/>
-  <classpathentry kind="var" path="M2_REPO/junit/junit/3.8.1/junit-3.8.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/junit/junit/4.12/junit-4.12.jar"/>
   <classpathentry kind="var" path="M2_REPO/junit/junit-dep/4.4/junit-dep-4.4.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/openoffice/jurt/3.1.0/jurt-3.1.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/python/jython-standalone/2.5.2b2-xwiki/jython-standalone-2.5.2b2-xwiki.jar"/>
