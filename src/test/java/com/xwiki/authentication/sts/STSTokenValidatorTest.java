@@ -25,10 +25,19 @@
 package com.xwiki.authentication.sts;
 
 import java.io.File;
+<<<<<<< HEAD
+=======
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+>>>>>>> 3bfc769852e7379bc82c70140a3644c50c5405db
 import java.io.IOException;
 import java.net.URI;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.List;
+
+import java.security.cert.X509Certificate;
 
 import com.xwiki.authentication.sts.STSClaim;
 import com.xwiki.authentication.sts.STSException;
@@ -66,8 +75,7 @@ public class STSTokenValidatorTest extends TestCase {
 
 		// Common test settings
 		testFile = new File("testToken.xml");
-		subjectDNs
-				.add("EMAILADDRESS=cisu.help@vraa.gov.lv, CN=VISS.LVP.STS, OU=VPISD, O=VRAA, L=Riga, ST=Riga, C=LV");
+		subjectDNs.add("EMAILADDRESS=cisu.help@vraa.gov.lv, CN=VISS.LVP.STS, OU=VPISD, O=VRAA, L=Riga, ST=Riga, C=LV");
 		audienceUris.add(new URI("https://pakalpojumi.carnikava.lv/prod"));
 		entityId = "http://www.latvija.lv/sts";
 		issuer = "http://www.latvija.lv/sts";
@@ -90,6 +98,26 @@ public class STSTokenValidatorTest extends TestCase {
 		validator.setMaxClockSkew(maxClockSkew);
 		logSettings();
 		testFile = new File("testToken.xml");
+<<<<<<< HEAD
+=======
+
+		FileInputStream fr;
+		try {
+			fr = new FileInputStream("VISS.LVP.STS.cer");
+			CertificateFactory cf;
+			try {
+				cf = CertificateFactory.getInstance("X509");
+				validator.setCertificate((X509Certificate) cf.generateCertificate(fr));
+			} catch (CertificateException e) {
+				System.out.println();
+				System.out.println("CertificateException!!!!!!!!!!!! " + e);
+			}
+		} catch (FileNotFoundException e) {
+			System.out.println();
+			System.out.println("FileNotFoundException!!!!!!!!!!!!!!!! " + e);
+		}
+
+>>>>>>> 3bfc769852e7379bc82c70140a3644c50c5405db
 		try {
 			testToken = FileUtils.readFileToString(testFile);
 		} catch (IOException e) {
@@ -149,8 +177,7 @@ public class STSTokenValidatorTest extends TestCase {
 			log.error("testNegWrongAudience failed");
 		} catch (STSException e) {
 			Assert.assertEquals(claims, null);
-			Assert.assertEquals(
-					"The token applies to an untrusted audience: https://pakalpojumi.carnikava.lv/prod",
+			Assert.assertEquals("The token applies to an untrusted audience: https://pakalpojumi.carnikava.lv/prod",
 					e.getMessage());
 			log.info("testNegWrongAudience passed");
 		} finally {
@@ -202,9 +229,7 @@ public class STSTokenValidatorTest extends TestCase {
 			log.error("testNegWrongDate failed");
 		} catch (STSException e) {
 			Assert.assertEquals(claims, null);
-			Assert.assertEquals(
-					"Token Created or Expires elements have been expired",
-					e.getMessage());
+			Assert.assertEquals("Token Created or Expires elements have been expired", e.getMessage());
 			log.info("testNegWrongDate passed");
 		} finally {
 			validator.setValidateExpiration(false);
@@ -252,8 +277,12 @@ public class STSTokenValidatorTest extends TestCase {
 		List<STSClaim> claims = validator.validate(testToken);
 		log.info("Validation passed. Claims: " + claims.size());
 		for (int i = 0; i < claims.size(); i++) {
+<<<<<<< HEAD
 			log.debug("claim " + claims.get(i).getClaimType() + ' '
 					+ claims.get(i).getClaimValues());
+=======
+			log.debug("claim " + claims.get(i).getClaimType() + ' ' + claims.get(i).getClaimValues());
+>>>>>>> 3bfc769852e7379bc82c70140a3644c50c5405db
 		}
 		log.info("testPosValidation passed");
 	}
@@ -264,8 +293,7 @@ public class STSTokenValidatorTest extends TestCase {
 		log.info("Issuer: " + issuer);
 		log.info("EntityID: " + entityId);
 		log.info("IssuerDN: " + issuerDN);
-		log.debug("============= Test token ===========\n" + testToken
-				+ "\n=============");
+		log.debug("============= Test token ===========\n" + testToken + "\n=============");
 		log.info("AudienceUris: " + audienceUris);
 		log.info("TrustedSubjectDNs: " + subjectDNs);
 	}

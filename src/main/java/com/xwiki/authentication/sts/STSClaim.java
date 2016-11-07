@@ -27,39 +27,38 @@ package com.xwiki.authentication.sts;
 import java.io.Serializable;
 
 public class STSClaim implements Serializable {
-    private static final long serialVersionUID = -6595685426248469363L;
-    private String claimType;
-    private String claimValue;
+	private static final long serialVersionUID = -6595685426248469363L;
+	private String claimType;
+	private String claimValue;
 
-    public STSClaim(String claimType, String claimValue) {
-	super();
-	this.claimType = claimType;
-	this.claimValue = claimValue;
-    }
+	public STSClaim(String claimType, String claimValue) {
+		super();
+		this.claimType = claimType;
+		this.claimValue = claimValue;
+	}
 
-    public String getClaimType() {
-	return claimType;
-    }
+	public String getClaimType() {
+		return claimType;
+	}
 
-    public void setClaimType(String claimType) {
-	this.claimType = claimType;
-    }
+	public void setClaimType(String claimType) {
+		this.claimType = claimType;
+	}
 
-    public String getClaimValue() {
-	return claimValue;
-    }
+	public String getClaimValue() {
+		return claimValue;
+	}
 
-    public String[] getClaimValues() {
-	return claimValue.split(",");
-    }
+	public String[] getClaimValues() {
+		return claimValue.split(",");
+	}
 
-    public void setClaimValue(String claimValue) {
-	this.claimValue = claimValue;
-    }
+	public void setClaimValue(String claimValue) {
+		this.claimValue = claimValue;
+	}
 
-    @Override
-    public String toString() {
-	return "STSClaim [claimType=" + claimType + ", claimValue="
-		+ claimValue + "]";
-    }
+	@Override
+	public String toString() {
+		return "STSClaim [claimType=" + claimType + ", claimValue=" + claimValue + "]";
+	}
 }
