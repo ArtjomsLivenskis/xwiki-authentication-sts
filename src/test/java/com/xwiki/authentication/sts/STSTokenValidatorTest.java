@@ -64,6 +64,7 @@ public class STSTokenValidatorTest {
 		validator.setValidateExpiration(false);
 		validator.setMaxClockSkew(maxClockSkew);
 		testFile = new File("testToken.xml");
+		validator.setCertificate(null);
 
 		try {
 			testToken = FileUtils.readFileToString(testFile);
