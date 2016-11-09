@@ -263,7 +263,7 @@ public class STSTokenValidator {
 			log.error(e);
 		}
 
-		if (nodes != null && nodes.getLength() == 0) {
+		if (nodes == null || nodes.getLength() == 0) {
 			throw new STSException("SAML token was not found");
 		} else {
 			Element samlTokenElement = (Element) nodes.item(0);

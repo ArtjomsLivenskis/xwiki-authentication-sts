@@ -159,3 +159,26 @@ null cause:null
 2016-11-08 19:00:39,265 [main] WARN  sts.STSTokenValidator           - Token time was not validated. To validate, set xwiki.authentication.sts.wct=1 
 2016-11-08 19:00:39,278 [main] ERROR sts.STSTokenValidatorTest       - testNegWrongEntityId failed 
 2016-11-08 19:00:39,283 [main] WARN  sts.STSTokenValidator           - Token time was not validated. To validate, set xwiki.authentication.sts.wct=1 
+2016-11-09 12:51:33,901 [main] ERROR sts.XWikiSTSAuthenticator       - Got error during printing request parameters: java.lang.NullPointerException 
+2016-11-09 12:51:33,950 [main] ERROR sts.XWikiSTSAuthenticator       - Got error during printing request parameters: java.lang.NullPointerException 
+2016-11-09 12:51:33,953 [main] ERROR sts.XWikiSTSAuthenticator       - Got error during printing request parameters: java.lang.NullPointerException 
+2016-11-09 12:51:34,015 [main] ERROR sts.XWikiSTSAuthenticator       - Failed to read request headers or parameters: java.lang.NullPointerException 
+2016-11-09 12:51:34,018 [main] ERROR sts.XWikiSTSAuthenticator       - Failed to validate token
+java.lang.NullPointerException 
+2016-11-09 12:51:34,019 [main] ERROR sts.XWikiSTSAuthenticator       - Failed to read request headers or parameters: java.lang.NullPointerException 
+2016-11-09 12:51:34,021 [main] WARN  sts.XWikiSTSAuthenticator       - Response and token were not validated! To validate, set xwiki.authentication.sts.wctx=1 
+2016-11-09 12:51:34,029 [main] ERROR sts.XWikiSTSAuthenticator       - Failed to read request headers or parameters: java.lang.NullPointerException 
+2016-11-09 12:51:34,031 [main] WARN  sts.XWikiSTSAuthenticator       - Response and token were not validated! To validate, set xwiki.authentication.sts.wctx=1 
+2016-11-09 12:51:34,131 [main] WARN  iPropertiesConfigurationSource  - Failed to load configuration file [/WEB-INF/xwiki.properties]. Using default configuration.  Internal error [null] 
+2016-11-09 12:51:40,295 [main] WARN  sts.STSTokenValidator           - Token time was not validated. To validate, set xwiki.authentication.sts.wct=1 
+2016-11-09 12:51:41,939 [main] WARN  sts.STSTokenValidator           - Token time was not validated. To validate, set xwiki.authentication.sts.wct=1 
+2016-11-09 12:51:42,167 [main] WARN  sts.STSTokenValidator           - Token time was not validated. To validate, set xwiki.authentication.sts.wct=1 
+2016-11-09 12:51:42,189 [main] WARN  sts.STSTokenValidator           - Token time was not validated. To validate, set xwiki.authentication.sts.wct=1 
+2016-11-09 12:51:42,238 [main] WARN  sts.STSTokenValidator           - Token time was not validated. To validate, set xwiki.authentication.sts.wct=1 
+2016-11-09 12:51:42,258 [main] WARN  sts.STSTokenValidator           - Token time was not validated. To validate, set xwiki.authentication.sts.wct=1 
+2016-11-09 12:51:42,277 [main] WARN  sts.STSTokenValidator           - Token time was not validated. To validate, set xwiki.authentication.sts.wct=1 
+2016-11-09 12:51:42,305 [main] WARN  signature.XMLSignature          - Signature verification failed. 
+2016-11-09 12:51:42,307 [main] WARN  signature.XMLSignature          - Signature verification failed. 
+2016-11-09 12:51:42,319 [main] WARN  sts.STSTokenValidator           - Token time was not validated. To validate, set xwiki.authentication.sts.wct=1 
+2016-11-09 12:51:42,346 [main] ERROR sts.STSTokenValidatorTest       - testNegWrongEntityId failed 
+2016-11-09 12:51:42,356 [main] WARN  sts.STSTokenValidator           - Token time was not validated. To validate, set xwiki.authentication.sts.wct=1 

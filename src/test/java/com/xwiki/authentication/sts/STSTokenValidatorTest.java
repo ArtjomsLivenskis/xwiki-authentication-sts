@@ -126,7 +126,7 @@ public class STSTokenValidatorTest {
 			log.error("testNegWrongAudience failed");
 		} catch (STSException e) {
 			Assert.assertEquals(claims, null);
-			Assert.assertEquals("The token applies to an untrusted audience: https://pakalpojumi.carnikava.lv/prod",
+			Assert.assertEquals("The token applies to an untrusted audience: "+audienceUris.get(0),
 					e.getMessage());
 			log.info("testNegWrongAudience passed");
 		} finally {
@@ -200,7 +200,7 @@ public class STSTokenValidatorTest {
 		} catch (STSException e) {
 			Assert.assertEquals(claims, null);
 			Assert.assertEquals(
-					"Wrong token Context. Suspected: WrongContext got: c6ibufXPEnVbU9hYc6rplyhjtEpWHEKWuMAJ8ryk4f",
+					"Wrong token Context. Suspected: WrongContext got: "+context,
 					e.getMessage());
 			log.info("testNegWrongContext passed");
 		} finally {
