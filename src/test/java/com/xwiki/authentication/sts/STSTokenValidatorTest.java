@@ -15,11 +15,18 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+<<<<<<< HEAD
 import org.junit.After;
+=======
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Before;
+<<<<<<< HEAD
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+=======
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 import org.junit.Test;
 
 public class STSTokenValidatorTest {
@@ -56,7 +63,11 @@ public class STSTokenValidatorTest {
 
 	@Before
 	public void setUp() {
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 		// validator prefilling with common test settings
 		validator.setSubjectDNs(subjectDNs);
 		validator.setAudienceUris(audienceUris);
@@ -68,7 +79,10 @@ public class STSTokenValidatorTest {
 		validator.setMaxClockSkew(maxClockSkew);
 		testFile = new File("testToken.xml");
 		validator.setCertificate(null);
+<<<<<<< HEAD
 		validator.setSTSErrorCollector(errorCollector);
+=======
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 
 		try {
 			testToken = FileUtils.readFileToString(testFile);
@@ -136,7 +150,7 @@ public class STSTokenValidatorTest {
 			log.error("testNegWrongAudience failed");
 		} catch (STSException e) {
 			Assert.assertEquals(claims, null);
-			Assert.assertEquals("The token applies to an untrusted audience: https://pakalpojumi.carnikava.lv/prod",
+			Assert.assertEquals("The token applies to an untrusted audience: "+audienceUris.get(0),
 					e.getMessage());
 			log.info("testNegWrongAudience passed");
 		} finally {
@@ -210,7 +224,7 @@ public class STSTokenValidatorTest {
 		} catch (STSException e) {
 			Assert.assertEquals(claims, null);
 			Assert.assertEquals(
-					"Wrong token Context. Suspected: WrongContext got: c6ibufXPEnVbU9hYc6rplyhjtEpWHEKWuMAJ8ryk4f",
+					"Wrong token Context. Suspected: WrongContext got: "+context,
 					e.getMessage());
 			log.info("testNegWrongContext passed");
 		} finally {
@@ -260,6 +274,7 @@ public class STSTokenValidatorTest {
 		log.info("testPosValidationUsingCertificate passed");
 	}
 
+<<<<<<< HEAD
 	@Test
 	@Ignore
 	public void testPosValidationUsingWrongCertificate() throws Exception {
@@ -271,6 +286,14 @@ public class STSTokenValidatorTest {
 		} catch (STSException e) {
 			log.info("testPosValidationUsingWrongCertificate passed");
 		}
+=======
+	@Test(expected = STSException.class)
+	public void testNegValidationUsingWrongCertificate() throws Exception {
+
+		validator.setCertificate(getCert("VISS.LVP.STS.wrong.cer"));
+		// Validate token
+		validator.validate(testToken);
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 	}
 
 	private X509Certificate getCert(String filename) throws FileNotFoundException, CertificateException {

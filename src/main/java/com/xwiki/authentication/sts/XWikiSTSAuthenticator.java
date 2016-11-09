@@ -132,8 +132,12 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 			context.getResponse().sendRedirect(url);
 			context.setFinished(true);
 		} catch (Exception e) {
+<<<<<<< HEAD
 			log.debug("Cannot call sendRedirect() after the response has been committed: "
 					+ e);
+=======
+			log.debug("Cannot call sendRedirect() after the response has been committed: "+e);
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 		}
 
 	}
@@ -164,9 +168,13 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 				log.trace(paramName + ": " + request.getParameter(paramName));
 			}
 		} catch (Exception e) {
+<<<<<<< HEAD
 			log.error("Failed to read request headers or parameters " + e);
 			errorCollector.addError(new Throwable(
 					"Failed to read request headers or parameters: ", e));
+=======
+			log.error("Failed to read request headers or parameters: " + e);
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 		}
 
 		String stsResponse = request.getParameter("wresult");
@@ -210,10 +218,15 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 				validator.setContext(prevId);
 				// Get parameters from Xwiki configuration
 				validator.setIssuer(props.getIssuer(context));
+<<<<<<< HEAD
 				log.debug("props.getIssuer(context) "
 						+ props.getIssuer(context));
 				log.debug("checkSTSResponse(props.getIssuer(context)) "
 						+ props.getIssuer(context));
+=======
+				log.debug("props.getIssuer(context) " + props.getIssuer(context));
+				log.debug("checkSTSResponse(props.getIssuer(context)) " + props.getIssuer(context));
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 				STSTokenValidator.setEntityId(props.getEntityId(context));
 				validator.setIssuerDN(props.getIssuerDN(context));
 				List<String> subjectDNs = new ArrayList<String>();
@@ -240,8 +253,11 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 				// as validator returns validation errors as exceptions
 				// log them only in debug mode
 				log.error("Failed to validate token\n" + e);
+<<<<<<< HEAD
 				errorCollector.addError(new Throwable(
 						"Failed to validate token: ", e));
+=======
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 				return false;
 			}
 
@@ -290,6 +306,7 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		}
 
 		// let's map the data
+<<<<<<< HEAD
 		Map<String, String> userData = getExtendedInformation(attributes,
 				context);
 		String personID = attributes.get(props.getIdField(context));
@@ -297,6 +314,13 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		String person_ID;
 		if (personID != null && personID.indexOf('-') < 0
 				&& personID.length() == 11) {
+=======
+		Map<String, String> userData = getExtendedInformation(attributes, context);
+		String personID = attributes.get(props.getIdField(context));
+		// set conventional person code format for NORDEA, PAREX, SEB banks
+		String person_ID;
+		if (personID != null && personID.indexOf('-') < 0 && personID.length() == 11) {
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 			person_ID = personID.substring(0, 6) + "-" + personID.substring(6);
 			log.debug("Changed person ID from " + personID + " to " + person_ID);
 		} else
@@ -494,8 +518,12 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 				.getAttribute(props.getAuthField(context));
 		if (stsUserName == null) {
 			// check standard authentication
+<<<<<<< HEAD
 			if (context.getRequest().getCookie("username") != null
 					|| "logout".equals(context.getAction())
+=======
+			if (context.getRequest().getCookie("username") != null || "logout".equals(context.getAction())
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 					|| context.getAction().startsWith("login")
 					|| "1".equals(context.getRequest()
 							.getParameter("basicauth"))) {
@@ -614,10 +642,13 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 			}
 		}
 		return userMappings;
+<<<<<<< HEAD
 	}
 
 	public void listErrors() {
 		log.info(errorCollector.listErrors());
 		errorCollector.clearErrorList();
+=======
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 	}
 }

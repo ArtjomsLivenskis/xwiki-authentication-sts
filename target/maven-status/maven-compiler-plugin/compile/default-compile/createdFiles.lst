@@ -1,3 +1,4 @@
+com/xwiki/authentication/sts/Props.class
 com/xwiki/authentication/sts/STSClaim.class
 com/xwiki/authentication/sts/XWikiSTSAuthenticator.class
 com/xwiki/authentication/sts/STSException.class

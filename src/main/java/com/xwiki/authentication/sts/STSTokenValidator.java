@@ -181,8 +181,12 @@ public class STSTokenValidator {
 			log.debug("\n");
 			log.debug("STSTokenValidator: cert is null, using old method");
 
+<<<<<<< HEAD
 			if (issuer != null && issuerDN != null
 					&& !trustedSubjectDNs.isEmpty()) {
+=======
+			if (issuer != null && issuerDN != null && !trustedSubjectDNs.isEmpty()) {
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 
 				if (!issuer.equals(getAttrVal(envelopedToken, "saml:Assertion",
 						"Issuer"))) {
@@ -245,6 +249,7 @@ public class STSTokenValidator {
 			claims = getClaims((org.opensaml.saml1.core.Assertion) samlToken);
 		}
 
+<<<<<<< HEAD
 		if (this.validateExpiration
 				&& samlToken instanceof org.opensaml.saml1.core.Assertion) {
 			Instant notBefore = ((org.opensaml.saml1.core.Assertion) samlToken)
@@ -255,6 +260,15 @@ public class STSTokenValidator {
 				errorCollector.addError(new Throwable("Token SAML Conditions: NotBefore or NotOnOrAfter has been expired"));
 				throw new STSException(
 						"Token SAML Conditions: NotBefore or NotOnOrAfter has been expired");
+=======
+		if (this.validateExpiration && samlToken instanceof org.opensaml.saml1.core.Assertion) {
+			Instant notBefore = ((org.opensaml.saml1.core.Assertion) samlToken).getConditions().getNotBefore()
+					.toInstant();
+			Instant notOnOrAfter = ((org.opensaml.saml1.core.Assertion) samlToken).getConditions().getNotOnOrAfter()
+					.toInstant();
+			if (!checkExpiration(notBefore, notOnOrAfter)) {
+				throw new STSException("Token SAML Conditions: NotBefore or NotOnOrAfter has been expired");
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 			}
 		}
 
@@ -295,6 +309,7 @@ public class STSTokenValidator {
 			log.error(e);
 		}
 
+<<<<<<< HEAD
 		if (nodes != null && nodes.getLength() == 0) {
 			throw new STSException("SAML token was not found");
 		} else {
@@ -303,6 +318,14 @@ public class STSTokenValidator {
 					.getUnmarshaller(samlTokenElement);
 			return (SignableSAMLObject) unmarshaller
 					.unmarshall(samlTokenElement);
+=======
+		if (nodes == null || nodes.getLength() == 0) {
+			throw new STSException("SAML token was not found");
+		} else {
+			Element samlTokenElement = (Element) nodes.item(0);
+			Unmarshaller unmarshaller = Configuration.getUnmarshallerFactory().getUnmarshaller(samlTokenElement);
+			return (SignableSAMLObject) unmarshaller.unmarshall(samlTokenElement);
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 		}
 	}
 
@@ -482,8 +505,12 @@ public class STSTokenValidator {
 			String attribute) throws ParserConfigurationException,
 			SAXException, IOException {
 		Document doc = getDocument(envelopedToken);
+<<<<<<< HEAD
 		return doc.getElementsByTagName(element).item(0).getAttributes()
 				.getNamedItem(attribute).getNodeValue();
+=======
+		return doc.getElementsByTagName(element).item(0).getAttributes().getNamedItem(attribute).getNodeValue();
+>>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 	}
 
 	private String getElementVal(String envelopedToken, String element)
