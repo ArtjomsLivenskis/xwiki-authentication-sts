@@ -45,7 +45,6 @@ import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.opensaml.Configuration;
 import org.opensaml.DefaultBootstrap;
-import org.opensaml.common.SAMLObject;
 import org.opensaml.common.SignableSAMLObject;
 import org.opensaml.xml.ConfigurationException;
 import org.opensaml.xml.XMLObject;
@@ -128,7 +127,7 @@ public class STSTokenValidator {
 		this.validateExpiration = value;
 	}
 
-	public void setEntityId(String value) {
+	public static void setEntityId(String value) {
 		entityId = value;
 	}
 
@@ -166,7 +165,7 @@ public class STSTokenValidator {
 			log.debug("\n");
 			log.debug("STSTokenValidator: cert is null, using old method");
 
-			if (issuer != null && issuerDN != null && trustedSubjectDNs.size() != 0) {
+			if (issuer != null && issuerDN != null && !trustedSubjectDNs.isEmpty()) {
 
 				if (!issuer.equals(getAttrVal(envelopedToken, "saml:Assertion", "Issuer"))) {
 					throw new STSException("Wrong token Issuer");
@@ -220,15 +219,13 @@ public class STSTokenValidator {
 			claims = getClaims((org.opensaml.saml1.core.Assertion) samlToken);
 		}
 
-		if (this.validateExpiration) {
-			if (samlToken instanceof org.opensaml.saml1.core.Assertion) {
-				Instant notBefore = ((org.opensaml.saml1.core.Assertion) samlToken).getConditions().getNotBefore()
-						.toInstant();
-				Instant notOnOrAfter = ((org.opensaml.saml1.core.Assertion) samlToken).getConditions().getNotOnOrAfter()
-						.toInstant();
-				if (!checkExpiration(notBefore, notOnOrAfter)) {
-					throw new STSException("Token SAML Conditions: NotBefore or NotOnOrAfter has been expired");
-				}
+		if (this.validateExpiration && samlToken instanceof org.opensaml.saml1.core.Assertion) {
+			Instant notBefore = ((org.opensaml.saml1.core.Assertion) samlToken).getConditions().getNotBefore()
+					.toInstant();
+			Instant notOnOrAfter = ((org.opensaml.saml1.core.Assertion) samlToken).getConditions().getNotOnOrAfter()
+					.toInstant();
+			if (!checkExpiration(notBefore, notOnOrAfter)) {
+				throw new STSException("Token SAML Conditions: NotBefore or NotOnOrAfter has been expired");
 			}
 		}
 
@@ -249,9 +246,7 @@ public class STSTokenValidator {
 				.getUnmarshaller(document.getDocumentElement());
 		org.opensaml.saml2.core.Response response = (org.opensaml.saml2.core.Response) unmarshaller
 				.unmarshall(document.getDocumentElement());
-		SignableSAMLObject samlToken = (SignableSAMLObject) response.getAssertions().get(0);
-
-		return samlToken;
+		return response.getAssertions().get(0);
 	}
 
 	private static SignableSAMLObject getSamlTokenFromRstr(String rstr)
@@ -265,18 +260,16 @@ public class STSTokenValidator {
 		try {
 			nodes = org.apache.xpath.XPathAPI.selectNodeList(document, xpath);
 		} catch (TransformerException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 
-		if (nodes.getLength() == 0) {
+		if (nodes != null && nodes.getLength() == 0) {
 			throw new STSException("SAML token was not found");
+		} else {
+			Element samlTokenElement = (Element) nodes.item(0);
+			Unmarshaller unmarshaller = Configuration.getUnmarshallerFactory().getUnmarshaller(samlTokenElement);
+			return (SignableSAMLObject) unmarshaller.unmarshall(samlTokenElement);
 		}
-
-		Element samlTokenElement = (Element) nodes.item(0);
-		Unmarshaller unmarshaller = Configuration.getUnmarshallerFactory().getUnmarshaller(samlTokenElement);
-		SignableSAMLObject samlToken = (SignableSAMLObject) unmarshaller.unmarshall(samlTokenElement);
-
-		return samlToken;
 	}
 
 	private static String getAudienceUri(org.opensaml.saml1.core.Assertion samlAssertion) {
@@ -306,9 +299,6 @@ public class STSTokenValidator {
 		samlToken.validate(true);
 
 		Signature signature = samlToken.getSignature();
-		// KeyInfo keyInfo = signature.getKeyInfo();
-		// X509Certificate certificate = (X509Certificate)
-		// KeyInfoHelper.getCertificates(keyInfo).get(0);
 		X509Certificate certificate = certFromToken(samlToken);
 
 		// Certificate data
@@ -360,7 +350,7 @@ public class STSTokenValidator {
 						"-----BEGIN CERTIFICATE-----\n" + certEncoded + "\n-----END CERTIFICATE-----");
 				log.trace("Certificate file was saved in: /tmp/Certificate.cer");
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				log.error(e1);
 			}
 		}
 		return engine.validate(signature, criteriaSet);
@@ -409,7 +399,7 @@ public class STSTokenValidator {
 
 	private static String getValueFrom(List<XMLObject> attributeValues) {
 
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 
 		for (XMLObject value : attributeValues) {
 			if (buffer.length() > 0)
@@ -430,15 +420,13 @@ public class STSTokenValidator {
 	private String getAttrVal(String envelopedToken, String element, String attribute)
 			throws ParserConfigurationException, SAXException, IOException {
 		Document doc = getDocument(envelopedToken);
-		String val = doc.getElementsByTagName(element).item(0).getAttributes().getNamedItem(attribute).getNodeValue();
-		return val;
+		return doc.getElementsByTagName(element).item(0).getAttributes().getNamedItem(attribute).getNodeValue();
 	}
 
 	private String getElementVal(String envelopedToken, String element)
 			throws ParserConfigurationException, SAXException, IOException {
 		Document doc = getDocument(envelopedToken);
-		String val = doc.getElementsByTagName(element).item(0).getTextContent();
-		return val;
+		return doc.getElementsByTagName(element).item(0).getTextContent();
 	}
 
 	public void setIssuerDN(String issuerDN) {
@@ -465,6 +453,7 @@ public class STSTokenValidator {
 		try {
 			return KeyInfoHelper.getCertificates(token.getSignature().getKeyInfo()).get(0);
 		} catch (CertificateException e) {
+			log.error(e);
 			return null;
 		}
 	}
