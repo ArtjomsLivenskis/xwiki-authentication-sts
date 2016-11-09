@@ -1,6 +1,5 @@
 package com.xwiki.authentication.sts;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -251,16 +250,12 @@ public class STSTokenValidatorTest {
 		log.info("testPosValidationUsingCertificate passed");
 	}
 
-	@Test
-	public void testPosValidationUsingWrongCertificate() throws Exception {
+	@Test(expected = STSException.class)
+	public void testNegValidationUsingWrongCertificate() throws Exception {
 
 		validator.setCertificate(getCert("VISS.LVP.STS.wrong.cer"));
 		// Validate token
-		try {
-			validator.validate(testToken);
-		} catch (STSException e) {
-			log.info("testPosValidationUsingWrongCertificate passed");
-		}
+		validator.validate(testToken);
 	}
 
 	private X509Certificate getCert(String filename) throws FileNotFoundException, CertificateException {

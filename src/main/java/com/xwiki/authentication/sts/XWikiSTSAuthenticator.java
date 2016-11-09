@@ -160,7 +160,7 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 				log.trace(paramName + ": " + request.getParameter(paramName));
 			}
 		} catch (Exception e) {
-			log.error("Failed to read request headers or parameters " + e);
+			log.error("Failed to read request headers or parameters: " + e);
 		}
 
 		String stsResponse = request.getParameter("wresult");
