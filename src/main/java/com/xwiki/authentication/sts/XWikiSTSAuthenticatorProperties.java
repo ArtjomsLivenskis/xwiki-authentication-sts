@@ -27,43 +27,50 @@ class XWikiSTSAuthenticatorProperties {
 	static Log log = LogFactory.getLog(XWikiSTSAuthenticator.class);
 
 	String getAuthURL(XWikiContext context) {
-		String url = context.getWiki().Param("xwiki.authentication.sts.authurl");
+		String url = context.getWiki()
+				.Param("xwiki.authentication.sts.authurl");
 		log.trace("getAuthUR(): " + url);
 		return url;
 	}
 
 	String getIdField(XWikiContext context) {
-		String idField = context.getWiki().Param("xwiki.authentication.sts.id_field");
+		String idField = context.getWiki().Param(
+				"xwiki.authentication.sts.id_field");
 		log.trace("getIdField(): " + idField);
 		return idField;
 	}
 
 	String getStsAuthClassIdField(XWikiContext context) {
-		String stsAuthClassIdField = context.getWiki().Param("xwiki.authentication.sts.stsauthclass_id_field");
+		String stsAuthClassIdField = context.getWiki().Param(
+				"xwiki.authentication.sts.stsauthclass_id_field");
 		log.trace("getStsAuthClassIdField(): " + stsAuthClassIdField);
 		return stsAuthClassIdField;
 	}
 
 	String getAuthField(XWikiContext context) {
-		String field = context.getWiki().Param("xwiki.authentication.sts.auth_field");
+		String field = context.getWiki().Param(
+				"xwiki.authentication.sts.auth_field");
 		log.trace("getAuthField(): " + field);
 		return field;
 	}
 
 	String getWtrealm(XWikiContext context) {
-		String wtrealm = context.getWiki().Param("xwiki.authentication.sts.wtrealm");
+		String wtrealm = context.getWiki().Param(
+				"xwiki.authentication.sts.wtrealm");
 		log.trace("getWtrealm(): " + wtrealm);
 		return wtrealm;
 	}
 
 	String getWreplyHost(XWikiContext context) {
-		String wreply = context.getWiki().Param("xwiki.authentication.sts.wreply_host");
+		String wreply = context.getWiki().Param(
+				"xwiki.authentication.sts.wreply_host");
 		log.trace("getWreplyHost(): " + wreply);
 		return wreply;
 	}
 
 	String getWreplyPage(XWikiContext context) {
-		String wreply = context.getWiki().Param("xwiki.authentication.sts.wreply_page");
+		String wreply = context.getWiki().Param(
+				"xwiki.authentication.sts.wreply_page");
 		log.trace("getWreplyPage(): " + wreply);
 		return wreply;
 	}
@@ -81,7 +88,8 @@ class XWikiSTSAuthenticatorProperties {
 	}
 
 	String getWfresh(XWikiContext context) {
-		String wfresh = context.getWiki().Param("xwiki.authentication.sts.wfresh");
+		String wfresh = context.getWiki().Param(
+				"xwiki.authentication.sts.wfresh");
 		log.trace("getWfresh(): " + wfresh);
 		return wfresh;
 	}
@@ -93,43 +101,50 @@ class XWikiSTSAuthenticatorProperties {
 	}
 
 	String getEntityId(XWikiContext context) {
-		String val = context.getWiki().Param("xwiki.authentication.sts.entity_id");
+		String val = context.getWiki().Param(
+				"xwiki.authentication.sts.entity_id");
 		log.trace("getEntityId(): " + val);
 		return val;
 	}
 
 	String getIssuerDN(XWikiContext context) {
-		String val = context.getWiki().Param("xwiki.authentication.sts.issuer_dn");
+		String val = context.getWiki().Param(
+				"xwiki.authentication.sts.issuer_dn");
 		log.trace("getIssuerDN(): " + val);
 		return val;
 	}
 
 	String getSubjectDNs(XWikiContext context) {
-		String val = context.getWiki().Param("xwiki.authentication.sts.subject_dns");
+		String val = context.getWiki().Param(
+				"xwiki.authentication.sts.subject_dns");
 		log.trace("getSubjectDNs(): " + val);
 		return val;
 	}
 
 	String getAudienceURIs(XWikiContext context) {
-		String val = context.getWiki().Param("xwiki.authentication.sts.audience_uris");
+		String val = context.getWiki().Param(
+				"xwiki.authentication.sts.audience_uris");
 		log.trace("getAudienceURIs(): " + val);
 		return val;
 	}
 
 	String getDataFormat(XWikiContext context) {
-		String format = context.getWiki().Param("xwiki.authentication.sts.data_format");
+		String format = context.getWiki().Param(
+				"xwiki.authentication.sts.data_format");
 		log.trace("getDataFormat(): " + format);
 		return format;
 	}
 
 	String getUsernameRule(XWikiContext context) {
-		String val = context.getWiki().Param("xwiki.authentication.sts.xwiki_username_rule");
+		String val = context.getWiki().Param(
+				"xwiki.authentication.sts.xwiki_username_rule");
 		log.trace("getUsernameRule(): " + val);
 		return val;
 	}
 
 	String getFieldMapping(XWikiContext context) {
-		String val = context.getWiki().Param("xwiki.authentication.sts.field_mapping");
+		String val = context.getWiki().Param(
+				"xwiki.authentication.sts.field_mapping");
 		log.trace("getFieldMapping(): " + val);
 		return val;
 	}

@@ -16,7 +16,8 @@ class Props extends XWikiSTSAuthenticatorProperties {
 		FileInputStream fr = null;
 		X509Certificate cert = null;
 		try {
-			filename = context.getWiki().Param("xwiki.authentication.sts.cert_filename");
+			filename = context.getWiki().Param(
+					"xwiki.authentication.sts.cert_filename");
 			fr = new FileInputStream(filename);
 			CertificateFactory cf;
 			cf = CertificateFactory.getInstance("X509");
@@ -26,17 +27,19 @@ class Props extends XWikiSTSAuthenticatorProperties {
 
 		} catch (FileNotFoundException e) {
 			log.debug("\n");
-			log.debug("XWikiSTSAuthenticatorProperties: cert '" + filename + "' not found: " + e);
+			log.debug("XWikiSTSAuthenticatorProperties: cert '" + filename
+					+ "' not found: " + e);
 		} catch (CertificateException e) {
 			log.debug("\n");
-			log.debug("XWikiSTSAuthenticatorProperties: Could not create cert from '" + filename + "': " + e);
+			log.debug("XWikiSTSAuthenticatorProperties: Could not create cert from '"
+					+ filename + "': " + e);
 		} finally {
-				if (fr != null)
-					try {
-						fr.close();
-					} catch (IOException e) {
-						log.error(e);
-					}
+			if (fr != null)
+				try {
+					fr.close();
+				} catch (IOException e) {
+					log.error(e);
+				}
 		}
 		return cert;
 	}

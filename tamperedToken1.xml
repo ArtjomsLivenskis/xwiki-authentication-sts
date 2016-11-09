@@ -1,0 +1,72 @@
+<t:RequestSecurityTokenResponse Context="c6ibufXPEnVbU9hYc5rplyhjtEpWHEKWuMAJ8ryk4f" xmlns:t="http://schemas.xmlsoap.org/ws/2005/02/trust">
+  <t:Lifetime>
+    <wsu:Created xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">2016-11-01T14:04:57.762Z</wsu:Created>
+    <wsu:Expires xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">2015-11-01T18:04:57.762Z</wsu:Expires>
+  </t:Lifetime>
+  <wsp:AppliesTo xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
+    <EndpointReference xmlns="http://www.w3.org/2005/08/addressing">
+      <Address>https://pakalpojumi.carnikava.lv/prod</Address>
+    </EndpointReference>
+  </wsp:AppliesTo>
+  <t:RequestedSecurityToken>
+    <saml:Assertion MajorVersion="1" MinorVersion="1" AssertionID="_3f4d3361-ab63-491d-9698-d31e57ad5b69" Issuer="http://www.latvija.lv/trust" IssueInstant="2016-11-01T14:04:57.762Z" xmlns:saml="urn:oasis:names:tc:SAML:1.0:assertion">
+      <saml:Conditions NotBefore="2016-11-01T14:04:57.762Z" NotOnOrAfter="2016-11-01T18:04:57.762Z">
+        <saml:AudienceRestrictionCondition>
+          <saml:Audience>https://pakalpojumi.carnikava.lv/sts</saml:Audience>
+        </saml:AudienceRestrictionCondition>
+      </saml:Conditions>
+      <saml:AttributeStatement>
+        <saml:Subject>
+          <saml:NameIdentifier Format="urn:ivis:100001:name.id-viss">PK:08098311268</saml:NameIdentifier>
+          <saml:SubjectConfirmation>
+            <saml:ConfirmationMethod>urn:oasis:names:tc:SAML:1.0:cm:bearer</saml:ConfirmationMethod>
+          </saml:SubjectConfirmation>
+        </saml:Subject>
+        <saml:Attribute AttributeName="privatepersonalidentifier" AttributeNamespace="http://schemas.xmlsoap.org/ws/2005/05/identity/claims" a:OriginalIssuer="http://www.latvija.lv/Swed" xmlns:a="http://schemas.xmlsoap.org/ws/2009/09/identity/claims">
+          <saml:AttributeValue>08098311268</saml:AttributeValue>
+        </saml:Attribute>
+        <saml:Attribute AttributeName="hash" AttributeNamespace="http://schemas.xmlsoap.org/ws/2005/05/identity/claims" a:OriginalIssuer="http://www.latvija.lv/Swed" xmlns:a="http://schemas.xmlsoap.org/ws/2009/09/identity/claims">
+          <saml:AttributeValue b:type="tn:hexBinary" xmlns:tn="http://www.w3.org/2001/XMLSchema" xmlns:b="http://www.w3.org/2001/XMLSchema-instance">23509597437791E39BD6A10F4DD4656C96DD0F90A6B628994AA98C3928D68941</saml:AttributeValue>
+        </saml:Attribute>
+        <saml:Attribute AttributeName="givenname" AttributeNamespace="http://schemas.xmlsoap.org/ws/2005/05/identity/claims" a:OriginalIssuer="http://www.latvija.lv/Swed" xmlns:a="http://schemas.xmlsoap.org/ws/2009/09/identity/claims">
+          <saml:AttributeValue>ARTJOMS</saml:AttributeValue>
+        </saml:Attribute>
+        <saml:Attribute AttributeName="surname" AttributeNamespace="http://schemas.xmlsoap.org/ws/2005/05/identity/claims" a:OriginalIssuer="http://www.latvija.lv/Swed" xmlns:a="http://schemas.xmlsoap.org/ws/2009/09/identity/claims">
+          <saml:AttributeValue>ĻIVENSKIS</saml:AttributeValue>
+        </saml:Attribute>
+      </saml:AttributeStatement>
+      <saml:AuthenticationStatement AuthenticationMethod="URN:IVIS:100001:AM.BANK-SWED" AuthenticationInstant="2016-11-01T14:04:57.185Z">
+        <saml:Subject>
+          <saml:NameIdentifier Format="urn:ivis:100001:name.id-viss">PK:08098311268</saml:NameIdentifier>
+          <saml:SubjectConfirmation>
+            <saml:ConfirmationMethod>urn:oasis:names:tc:SAML:1.0:cm:bearer</saml:ConfirmationMethod>
+          </saml:SubjectConfirmation>
+        </saml:Subject>
+        <saml:SubjectLocality IPAddress="85.254.250.27" />
+      </saml:AuthenticationStatement>
+      <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+        <ds:SignedInfo>
+          <ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" />
+          <ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" />
+          <ds:Reference URI="#_3f4d3361-ab63-491d-9698-d31e57ad5b69">
+            <ds:Transforms>
+              <ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" />
+              <ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" />
+            </ds:Transforms>
+            <ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+            <ds:DigestValue>0YTvQuhLmRdBLQLRmUHPYjvr8OY=</ds:DigestValue>
+          </ds:Reference>
+        </ds:SignedInfo>
+        <ds:SignatureValue>dr5WYADsGrLA5lxxlRwKdVOvjHoeG4EHngDx1Dz/I22uq64pgjtGAIehleW3/Fntvwb2at2B0+c25m7h2+Fk5JXTPrH2Indf7ZxqVxI8J6rASqAuKYPjzzr2xVfPgQqoMxPVuaxjOYmYgojCL4iva2iEF4nF0H4sIiMQsZ3aPhzC213Sri3Vfr5xr94PE3SEdRAsnqmsF8r0PgJV87yuZ1gX4s7IAh5OWtynM5RAa1gBIu2d58c8eE3ZLoPosGzJinF1I9FmphvsxohBY4CvKyHY9HP8QVTybjK11rx2rukJgjB1VJhncOl0OM039CX9M/777K6mRz1TAmvsRgKeBg==</ds:SignatureValue>
+        <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
+          <X509Data>
+            <X509Certificate>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</X509Certificate>
+          </X509Data>
+        </KeyInfo>
+      </ds:Signature>
+    </saml:Assertion>
+  </t:RequestedSecurityToken>
+  <t:TokenType>urn:oasis:names:tc:SAML:1.0:assertion</t:TokenType>
+  <t:RequestType>http://schemas.xmlsoap.org/ws/2005/02/trust/Issue</t:RequestType>
+  <t:KeyType>http://schemas.xmlsoap.org/ws/2005/05/identity/NoProofKey</t:KeyType>
+</t:RequestSecurityTokenResponse>

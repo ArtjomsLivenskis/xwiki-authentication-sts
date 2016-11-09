@@ -1,6 +1,5 @@
 package com.xwiki.authentication.sts;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,18 +14,10 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-<<<<<<< HEAD
 import org.junit.After;
-=======
->>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Before;
-<<<<<<< HEAD
 import org.junit.BeforeClass;
-import org.junit.Ignore;
-=======
->>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 import org.junit.Test;
 
 public class STSTokenValidatorTest {
@@ -52,7 +43,8 @@ public class STSTokenValidatorTest {
 
 		// Common test settings
 		testFile = new File("testToken.xml");
-		subjectDNs.add("EMAILADDRESS=cisu.help@vraa.gov.lv, CN=VISS.LVP.STS, OU=VPISD, O=VRAA, L=Riga, ST=Riga, C=LV");
+		subjectDNs
+				.add("EMAILADDRESS=cisu.help@vraa.gov.lv, CN=VISS.LVP.STS, OU=VPISD, O=VRAA, L=Riga, ST=Riga, C=LV");
 		audienceUris.add(new URI("https://pakalpojumi.carnikava.lv/prod"));
 		entityId = "http://www.latvija.lv/sts";
 		issuer = "http://www.latvija.lv/sts";
@@ -63,11 +55,7 @@ public class STSTokenValidatorTest {
 
 	@Before
 	public void setUp() {
-<<<<<<< HEAD
-		
-=======
 
->>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 		// validator prefilling with common test settings
 		validator.setSubjectDNs(subjectDNs);
 		validator.setAudienceUris(audienceUris);
@@ -79,10 +67,7 @@ public class STSTokenValidatorTest {
 		validator.setMaxClockSkew(maxClockSkew);
 		testFile = new File("testToken.xml");
 		validator.setCertificate(null);
-<<<<<<< HEAD
 		validator.setSTSErrorCollector(errorCollector);
-=======
->>>>>>> ebf14cb781b869d3b9268d954238366d23734214
 
 		try {
 			testToken = FileUtils.readFileToString(testFile);
@@ -91,10 +76,10 @@ public class STSTokenValidatorTest {
 		}
 	}
 	
-	@After
+	@After 
 	public void tearDown() {
-		log.info(errorCollector.listErrors());
-	}
+		log.info(validator.errorCollector.listErrors());
+}
 
 	@Test
 	public void testNegBadSignature() throws Exception {
@@ -106,6 +91,7 @@ public class STSTokenValidatorTest {
 		try {
 			claims = validator.validate(testToken);
 			log.error("testNegBadSignature failed");
+
 		} catch (Exception e) {
 			Assert.assertEquals(claims, null);
 			Assert.assertEquals("Invalid signature", e.getMessage());
@@ -150,8 +136,8 @@ public class STSTokenValidatorTest {
 			log.error("testNegWrongAudience failed");
 		} catch (STSException e) {
 			Assert.assertEquals(claims, null);
-			Assert.assertEquals("The token applies to an untrusted audience: "+audienceUris.get(0),
-					e.getMessage());
+			Assert.assertEquals("The token applies to an untrusted audience: "
+					+ audienceUris.get(0), e.getMessage());
 			log.info("testNegWrongAudience passed");
 		} finally {
 			validator.setAudienceUris(audienceUris);
@@ -205,7 +191,9 @@ public class STSTokenValidatorTest {
 			log.error("testNegWrongDate failed");
 		} catch (STSException e) {
 			Assert.assertEquals(claims, null);
-			Assert.assertEquals("Token Created or Expires elements have been expired", e.getMessage());
+			Assert.assertEquals(
+					"Token Created or Expires elements have been expired",
+					e.getMessage());
 			log.info("testNegWrongDate passed");
 		} finally {
 			validator.setValidateExpiration(false);
@@ -224,8 +212,8 @@ public class STSTokenValidatorTest {
 		} catch (STSException e) {
 			Assert.assertEquals(claims, null);
 			Assert.assertEquals(
-					"Wrong token Context. Suspected: WrongContext got: "+context,
-					e.getMessage());
+					"Wrong token Context. Suspected: WrongContext got: "
+							+ context, e.getMessage());
 			log.info("testNegWrongContext passed");
 		} finally {
 			validator.setContext(context);
@@ -256,7 +244,8 @@ public class STSTokenValidatorTest {
 		List<STSClaim> claims = validator.validate(testToken);
 		log.info("Validation passed. Claims: " + claims.size());
 		for (int i = 0; i < claims.size(); i++) {
-			log.debug("claim " + claims.get(i).getClaimType() + ' ' + claims.get(i).getClaimValues());
+			log.debug("claim " + claims.get(i).getClaimType() + ' '
+					+ claims.get(i).getClaimValues());
 		}
 		log.info("testPosValidationUsingMetadata passed");
 	}
@@ -269,34 +258,46 @@ public class STSTokenValidatorTest {
 		List<STSClaim> claims = validator.validate(testToken);
 		log.info("Validation passed. Claims: " + claims.size());
 		for (int i = 0; i < claims.size(); i++) {
-			log.debug("claim " + claims.get(i).getClaimType() + ' ' + claims.get(i).getClaimValues());
+			log.debug("claim " + claims.get(i).getClaimType() + ' '
+					+ claims.get(i).getClaimValues());
 		}
 		log.info("testPosValidationUsingCertificate passed");
 	}
 
-<<<<<<< HEAD
-	@Test
-	@Ignore
-	public void testPosValidationUsingWrongCertificate() throws Exception {
-
-		validator.setCertificate(getCert("VISS.LVP.STS.wrong.cer"));
-		// Validate token
-		try {
-			validator.validate(testToken);
-		} catch (STSException e) {
-			log.info("testPosValidationUsingWrongCertificate passed");
-		}
-=======
 	@Test(expected = STSException.class)
 	public void testNegValidationUsingWrongCertificate() throws Exception {
 
 		validator.setCertificate(getCert("VISS.LVP.STS.wrong.cer"));
 		// Validate token
 		validator.validate(testToken);
->>>>>>> ebf14cb781b869d3b9268d954238366d23734214
+	}
+	
+	@Test
+	public void testNegBadToken() throws Exception {
+		// Current settings
+		validator.errorCollector.clearErrorList();
+		File tamperedFile = new File("tamperedToken1.xml");
+		testToken = FileUtils.readFileToString(tamperedFile);
+		// Validate token
+		List<STSClaim> claims = null;
+		try {
+			claims = validator.validate(testToken);
+			log.error("testNegBadSignature failed");
+			log.error(validator.errorCollector.listErrors());
+		} catch (Exception e) {
+			Assert.assertEquals(claims, null);
+			Assert.assertEquals("Invalid signature", e.getMessage());
+			log.info("testNegBadSignature passed");
+		} finally {
+			// Renew default settings
+			testFile = new File("testToken.xml");
+			testToken = FileUtils.readFileToString(tamperedFile);
+		}
 	}
 
-	private X509Certificate getCert(String filename) throws FileNotFoundException, CertificateException {
+
+	private X509Certificate getCert(String filename)
+			throws FileNotFoundException, CertificateException {
 
 		FileInputStream fr;
 		X509Certificate cer = null;

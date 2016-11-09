@@ -3,8 +3,6 @@ package com.xwiki.authentication.sts;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.tools.ant.types.resources.selectors.InstanceOf;
-
 public class STSErrorCollector {
 
 	private List<Throwable> errorList;
@@ -19,18 +17,29 @@ public class STSErrorCollector {
 	}
 
 	public String listErrors() {
-		String normalizedList = System.lineSeparator() + "================"
-				+ System.lineSeparator() + "ERROR LIST"
-				+ System.lineSeparator() + "================"
-				+ System.lineSeparator();
-		for (Throwable currentThrowable : errorList) {
-			normalizedList = normalizedList + currentThrowable + ": "
-					+ currentThrowable.getCause() + System.lineSeparator();
+		String normalizedList = "";
+		if (errorList.size() > 0) {
+			normalizedList = "\n\n***** ERROR LIST *****\n";
+			for (Throwable currentThrowable : errorList) {
+				normalizedList = normalizedList + currentThrowable;
+				if (currentThrowable.getCause() == null)
+					normalizedList += "\n";
+				else
+					normalizedList = normalizedList
+							+ currentThrowable.getCause()
+							+ "\n";
+			}
+			normalizedList = normalizedList + "**********************"
+					+ "\n";
 		}
-		return normalizedList + "================" + System.lineSeparator();
+		return normalizedList;
 	}
-	
-	public void clearErrorList(){
+
+	public void clearErrorList() {
 		errorList.clear();
+	}
+
+	public int geterrorListLength() {
+		return errorList.size();
 	}
 }

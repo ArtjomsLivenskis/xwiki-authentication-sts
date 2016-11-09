@@ -59,6 +59,7 @@ public class STSClaim implements Serializable {
 
 	@Override
 	public String toString() {
-		return "STSClaim [claimType=" + claimType + ", claimValue=" + claimValue + "]";
+		return "STSClaim [claimType=" + claimType + ", claimValue="
+				+ claimValue + "]";
 	}
 }
