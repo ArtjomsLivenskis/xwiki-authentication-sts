@@ -26,6 +26,11 @@ package com.xwiki.authentication.sts;
 
 import java.io.Serializable;
 
+/**
+ * Class to hold and get/set STS Claim data in a Serializable way
+ * 
+ * @version 1.0
+ */
 public class STSClaim implements Serializable {
 	private static final long serialVersionUID = -6595685426248469363L;
 	private String claimType;

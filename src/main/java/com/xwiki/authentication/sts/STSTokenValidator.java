@@ -93,11 +93,13 @@ import org.xml.sax.SAXException;
 */
 /**
  * Validates STSToken
+ * Have main method validate to validate token and have some utility private methods helping to
+ * validation process
  * 
  * @version 1.0
  */
 @SuppressWarnings("deprecation")
-public class STSTokenValidator {
+public class  STSTokenValidator {
 	private static Log log = LogFactory.getLog(STSTokenValidator.class);
 	private int maxClockSkew;
 	private List<String> trustedSubjectDNs;
@@ -115,7 +117,7 @@ public class STSTokenValidator {
 	
 	
 	/**
-	 * STSTokenValidator - constructor for making  STSTokenValidator
+	 * <b>STSTokenValidator</b> - constructor for making  STSTokenValidator
 	 *
 	 * @param trustedSubjectDNs List<String>,
 	 * @param audienceUris List<URI>

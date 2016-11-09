@@ -7,10 +7,28 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
+import org.opensaml.xml.ConfigurationException;
+
 import com.xpn.xwiki.XWikiContext;
+
+/**
+ * This class have only one method which is loading certificate from filemname in 
+ * xwiki.authentication.sts.cert_filename METHADATA. 
+ * 
+ * @version 1.0
+ */
 
 class Props extends XWikiSTSAuthenticatorProperties {
 
+
+	/**
+	 * <b>getCertificate</b> - returns X509Certificate getCertificate. 
+	 *
+	 * @param context XWikiContext - context containing cert_filename attribute
+	 * @throws ConfigurationException - exception of open SAML's configuration
+	 * @return X509Certificate cert - loaded certificate
+	 * 
+	 */
 	X509Certificate getCertificate(XWikiContext context) {
 		String filename = null;
 		FileInputStream fr = null;

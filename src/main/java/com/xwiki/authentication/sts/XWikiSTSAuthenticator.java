@@ -510,7 +510,6 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
      * @return mapped information in format Map<String, String> 
 	 * @see com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkAuth(com.xpn.xwiki.XWikiContext)
 	 */
-	
 	private Map<String, String> getExtendedInformation(Map data, XWikiContext context) {
 		log.trace("ExtendedInformation()");
 		Map<String, String> extInfos = new HashMap<String, String>();
@@ -535,6 +534,14 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		return userFields.split(",");
 	}
 
+    /**
+     * generateXWikiUsername(Map userData, XWikiContext context)
+     * generate username according to XWikiContext and userData fields
+     * @param userData Map - data acccording which - will be extracted extended information
+     * @param context XWikiContext - context to get data from
+     * @return userName String
+	 * @see com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkAuth(com.xpn.xwiki.XWikiContext)
+	 */
 	private String generateXWikiUsername(Map userData, XWikiContext context) {
 		log.trace("generateXWikiUsername()");
 		String[] userFields = getXWikiUsernameRule(context);

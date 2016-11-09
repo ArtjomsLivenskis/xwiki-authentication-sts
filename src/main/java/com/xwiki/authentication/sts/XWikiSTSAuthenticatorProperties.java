@@ -22,7 +22,11 @@ package com.xwiki.authentication.sts;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.xpn.xwiki.XWikiContext;
-
+/*
+ * This class is written to get properties from XWikiContext's object.
+ * 
+ * @version 1.0
+ */
 class XWikiSTSAuthenticatorProperties {
 	static Log log = LogFactory.getLog(XWikiSTSAuthenticator.class);
 
