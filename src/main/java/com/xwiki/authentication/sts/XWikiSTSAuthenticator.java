@@ -39,6 +39,8 @@ import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,20 +50,29 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+//import test.unit.be.fedict.eid.idp.sp.protocol.ws_federation.AuthenticationResponseProcessorTest;
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 /**
  * Authentication based on Trust Security Token Service. Some parameters can be
  * used to customized its behavior in xwiki.cfg
  * 
- * @version $Id$
+ * @version 1.0
  */
 public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 	private static Log log = LogFactory.getLog(XWikiSTSAuthenticator.class);
 	private static Map<String, String> userMappings;
+	// private static XWikiSTSAuthenticatorProperties props = new
+	// XWikiSTSAuthenticatorProperties();
 	private static Props props = new Props();
 
-	@Override
+    /**
+     * showLogin - Makes appropriate url and sends request to the STS (Security Token Service)  
+     * and gets response with xwiki methods.
+     * 
+     * @param context XWikiContext - context - to make request and show login
+     * @throws XWikiException java.lang.Object extended by java.lang.Throwable </br> extended by java.lang.Exception extended by com.xpn.xwiki.XWikiException
+     */
 	public void showLogin(XWikiContext context) throws XWikiException {
 		log.trace("showLogin()");
 		XWikiRequest request = context.getRequest();
@@ -128,20 +139,18 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 			context.getResponse().sendRedirect(url);
 			context.setFinished(true);
 		} catch (Exception e) {
-			log.debug("Cannot call sendRedirect() after the response has been committed: "+e);
+			log.debug("Cannot call sendRedirect() after the response has been committed");
 		}
-
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @throws ConfigurationException
-	 * @throws
-	 * 
-	 * 			@see
-	 *             com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkSTSResponse(com.xpn.xwiki.XWikiContext)
-	 */
+    /**
+     * checkSTSResponse - Check Response of (Security Token Service)  
+     * This method is trying to create document using XWikiContext context argument and checking is it done or not? 
+     * 
+     * @param context XWikiContext - XWikiContext to check is it have right data
+     * @return boolen - true - if check - ok, false - fault to create doc from test data etc.
+     * @throws XWikiException java.lang.Object extended by java.lang.Throwable </br> extended by java.lang.Exception extended by com.xpn.xwiki.XWikiException
+     */
 	public boolean checkSTSResponse(XWikiContext context) throws XWikiException {
 		// read from STSResponse
 		log.trace("checkSTSResponse()");
@@ -151,16 +160,16 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		try {
 			Enumeration<String> headerNames = request.getHeaderNames();
 			while (headerNames.hasMoreElements()) {
-				String headerName = headerNames.nextElement();
+				String headerName = (String) headerNames.nextElement();
 				log.trace(headerName + ": " + request.getHeader(headerName));
 			}
 			Enumeration<String> paramNames = request.getParameterNames();
 			while (paramNames.hasMoreElements()) {
-				String paramName = paramNames.nextElement();
+				String paramName = (String) paramNames.nextElement();
 				log.trace(paramName + ": " + request.getParameter(paramName));
 			}
 		} catch (Exception e) {
-			log.error("Failed to read request headers or parameters: " + e);
+			log.error("Failed to read request headers or parameters " + e);
 		}
 
 		String stsResponse = request.getParameter("wresult");
@@ -198,7 +207,7 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 				validator.setIssuer(props.getIssuer(context));
 				log.debug("props.getIssuer(context) " + props.getIssuer(context));
 				log.debug("checkSTSResponse(props.getIssuer(context)) " + props.getIssuer(context));
-				STSTokenValidator.setEntityId(props.getEntityId(context));
+				validator.setEntityId(props.getEntityId(context));
 				validator.setIssuerDN(props.getIssuerDN(context));
 				List<String> subjectDNs = new ArrayList<String>();
 				subjectDNs.add(props.getSubjectDNs(context));
@@ -221,7 +230,7 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 			} catch (Exception e) {
 				// as validator returns validation errors as exceptions
 				// log them only in debug mode
-				log.error("Failed to validate token\n" + e);
+				log.error("Failed to validate token\n" + e.getMessage() + " cause:" + e.getCause());
 				return false;
 			}
 
@@ -261,10 +270,10 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 
 		// let's map the data
 		Map<String, String> userData = getExtendedInformation(attributes, context);
-		String personID = attributes.get(props.getIdField(context));
+		String personID = (String) attributes.get(props.getIdField(context));
 		// set conventional person code format for NORDEA, PAREX, SEB banks
 		String person_ID;
-		if (personID != null && personID.indexOf('-') < 0 && personID.length() == 11) {
+		if (personID != null && personID.indexOf("-") < 0 && personID.length() == 11) {
 			person_ID = personID.substring(0, 6) + "-" + personID.substring(6);
 			log.debug("Changed person ID from " + personID + " to " + person_ID);
 		} else
@@ -284,11 +293,11 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		String validFullUserName = null;
 		String validUserName = null;
 
-		if (list.isEmpty()) {
+		if (list.size() == 0) {
 			// User does not exist. Let's generate a unique page name
 			log.debug("Did not find XWiki User. Generating it.");
 			String userName = generateXWikiUsername(userData, context);
-			if ("".equals(userName))
+			if (userName.equals(""))
 				userName = "User";
 			validUserName = context.getWiki().getUniquePageName("XWiki", userName, context);
 			validFullUserName = "XWiki." + validUserName;
@@ -366,7 +375,7 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 						stsObj.set("authtype", authType, context);
 						updated = true;
 					}
-					if (updated) {
+					if (updated == true) {
 						context.getWiki().saveDocument(userDoc, context);
 						log.info("Existing user " + validFullUserName + " has been successfully updated. Nameid: "
 								+ person_ID + " authtype: " + authType);
@@ -402,9 +411,14 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
+    /**
+     * checkAuth - Checks authentification session in cookies. If there is data about current user
+     * returns it. If there is not an authentification data - then method is trying to login
+     * using methadata creating new XWiki Object.
+     * 
+     * @param context XWikiContext - context of XWiki Engine
+     * @throws XWikiUser java.lang.Object extended by java.lang.Throwable </br> extended by java.lang.Exception extended by com.xpn.xwiki.XWikiException
+     *
 	 * @see com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkAuth(com.xpn.xwiki.XWikiContext)
 	 */
 	@Override
@@ -422,7 +436,7 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 			Enumeration<String> en = request.getParameterNames();
 			log.trace("request parameters=============");
 			while (en.hasMoreElements()) {
-				String paramName = en.nextElement();
+				String paramName = (String) en.nextElement();
 				String paramValue = request.getParameter(paramName);
 				log.trace(paramName + "=" + URLEncoder.encode(paramValue));
 			}
@@ -434,7 +448,7 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		String stsUserName = (String) context.getRequest().getSession().getAttribute(props.getAuthField(context));
 		if (stsUserName == null) {
 			// check standard authentication
-			if (context.getRequest().getCookie("username") != null || "logout".equals(context.getAction())
+			if (context.getRequest().getCookie("username") != null || context.getAction().equals("logout")
 					|| context.getAction().startsWith("login")
 					|| "1".equals(context.getRequest().getParameter("basicauth"))) {
 				log.debug("Fallback to standard authentication");
@@ -466,19 +480,37 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 			throws XWikiException {
 		log.trace("checkAuth(): " + username + ", " + password + ", " + rememberme);
 		String auth = getAuthFieldValue(context);
-		if ((auth == null) || "".equals(auth)) {
+		if ((auth == null) || auth.equals("")) {
 			return super.checkAuth(context);
 		} else {
 			return checkAuth(context);
 		}
 	}
 
+    /**
+     * getter to get authField (value) from XWikiContext
+     * 
+     * @param context XWikiContext - context of XWiki Engine
+     * @throws XWikiUser java.lang.Object extended by java.lang.Throwable </br> extended by java.lang.Exception extended by com.xpn.xwiki.XWikiException
+     *
+	 * @see com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkAuth(com.xpn.xwiki.XWikiContext)
+	 */
 	private String getAuthFieldValue(XWikiContext context) {
 		String val = (String) context.getRequest().getSession(true).getAttribute(props.getAuthField(context));
 		log.trace("getAuthFieldValue(): " + val);
 		return val;
 	}
-
+	
+    /**
+     * getExtendedInformation 
+     * Get Extended Information from context according to data parameter
+     * 
+     * @param data Map - data acccording which - will be extracted extended information
+     * @param context XWikiContext - context to get data from
+     * @return mapped information in format Map<String, String> 
+	 * @see com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkAuth(com.xpn.xwiki.XWikiContext)
+	 */
+	
 	private Map<String, String> getExtendedInformation(Map data, XWikiContext context) {
 		log.trace("ExtendedInformation()");
 		Map<String, String> extInfos = new HashMap<String, String>();
@@ -506,15 +538,15 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 	private String generateXWikiUsername(Map userData, XWikiContext context) {
 		log.trace("generateXWikiUsername()");
 		String[] userFields = getXWikiUsernameRule(context);
-		StringBuilder userName = new StringBuilder("");
+		String userName = "";
 		for (String field : userFields) {
 			String value = (String) userData.get(field);
 			if (value != null && value.length() > 0) {
-				userName.append(value);
+				userName += value;
 			}
 		}
 		log.debug("XWikiUsername: " + userName);
-		return userName.toString();
+		return userName;
 	}
 
 	/**
@@ -523,10 +555,10 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 	 * @return the mapping between HTTP header fields names and XWiki user
 	 *         profile fields names.
 	 */
-	private static Map<String, String> getFieldMapping(XWikiContext context) {
+	private Map<String, String> getFieldMapping(XWikiContext context) {
 		log.trace("getFieldMapping()");
-		if (userMappings == null) {
-			userMappings = new HashMap<String, String>();
+		if (this.userMappings == null) {
+			this.userMappings = new HashMap<String, String>();
 
 			String fieldMapping = props.getFieldMapping(context);
 			String[] fields = fieldMapping.split(",");
@@ -536,12 +568,12 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 				if (2 == field.length) {
 					String xwikiattr = field[0].trim();
 					String headerattr = field[1].trim();
-					userMappings.put(headerattr, xwikiattr);
+					this.userMappings.put(headerattr, xwikiattr);
 				} else {
 					log.error("Error parsing STS fields_mapping attribute in xwiki.cfg: " + fields[j]);
 				}
 			}
 		}
-		return userMappings;
+		return this.userMappings;
 	}
 }
