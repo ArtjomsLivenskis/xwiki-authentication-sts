@@ -48,7 +48,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-//import test.unit.be.fedict.eid.idp.sp.protocol.ws_federation.AuthenticationResponseProcessorTest;
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 /**
@@ -60,10 +59,10 @@ import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 	private static Log log = LogFactory.getLog(XWikiSTSAuthenticator.class);
 	private static Map<String, String> userMappings;
-	// private static XWikiSTSAuthenticatorProperties props = new
-	// XWikiSTSAuthenticatorProperties();
 	private static Props props = new Props();
+	private STSErrorCollector errorCollector = new STSErrorCollector();
 
+	@Override
 	public void showLogin(XWikiContext context) throws XWikiException {
 		log.trace("showLogin()");
 		XWikiRequest request = context.getRequest();
@@ -71,6 +70,8 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 			DefaultBootstrap.bootstrap();
 		} catch (ConfigurationException e) {
 			log.error("Failed to bootstrap sts module" + e);
+			errorCollector.addError(new Throwable(
+					"Failed to bootstrap sts module: ", e));
 		}
 
 		// STS provider URL
@@ -113,7 +114,8 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		// Auth request time
 		String wct = props.getWct(context);
 		if (wct != null && "1".equals(wct)) {
-			SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+			SimpleDateFormat dateFormatGmt = new SimpleDateFormat(
+					"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 			dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT"));
 			wct = dateFormatGmt.format(new Date());
 			url += "&wct=" + wct;
@@ -130,7 +132,8 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 			context.getResponse().sendRedirect(url);
 			context.setFinished(true);
 		} catch (Exception e) {
-			log.debug("Cannot call sendRedirect() after the response has been committed");
+			log.debug("Cannot call sendRedirect() after the response has been committed: "
+					+ e);
 		}
 
 	}
@@ -141,8 +144,7 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 	 * @throws ConfigurationException
 	 * @throws
 	 * 
-	 * 			@see
-	 *             com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkSTSResponse(com.xpn.xwiki.XWikiContext)
+	 * @see com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkSTSResponse(com.xpn.xwiki.XWikiContext)
 	 */
 	public boolean checkSTSResponse(XWikiContext context) throws XWikiException {
 		// read from STSResponse
@@ -153,16 +155,18 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		try {
 			Enumeration<String> headerNames = request.getHeaderNames();
 			while (headerNames.hasMoreElements()) {
-				String headerName = (String) headerNames.nextElement();
+				String headerName = headerNames.nextElement();
 				log.trace(headerName + ": " + request.getHeader(headerName));
 			}
 			Enumeration<String> paramNames = request.getParameterNames();
 			while (paramNames.hasMoreElements()) {
-				String paramName = (String) paramNames.nextElement();
+				String paramName = paramNames.nextElement();
 				log.trace(paramName + ": " + request.getParameter(paramName));
 			}
 		} catch (Exception e) {
 			log.error("Failed to read request headers or parameters " + e);
+			errorCollector.addError(new Throwable(
+					"Failed to read request headers or parameters: ", e));
 		}
 
 		String stsResponse = request.getParameter("wresult");
@@ -172,14 +176,21 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		}
 
 		log.debug("\n***** STS Response: *****\n" + stsResponse + "\n*****");
-		HttpServletRequest myRequest = context.getRequest().getHttpServletRequest();
+		HttpServletRequest myRequest = context.getRequest()
+				.getHttpServletRequest();
 		try {
-			log.debug("request.getParameter('wresult') is " + myRequest.getParameter("wresult"));
-			log.debug("request.getParameter('wct') is " + myRequest.getParameter("wct"));
-			log.debug("request.getParameter('wctx') is " + myRequest.getParameter("wctx"));
-			log.debug("request.getParameter('wa') is " + myRequest.getParameter("wa"));
+			log.debug("request.getParameter('wresult') is "
+					+ myRequest.getParameter("wresult"));
+			log.debug("request.getParameter('wct') is "
+					+ myRequest.getParameter("wct"));
+			log.debug("request.getParameter('wctx') is "
+					+ myRequest.getParameter("wctx"));
+			log.debug("request.getParameter('wa') is "
+					+ myRequest.getParameter("wa"));
 		} catch (Exception e) {
 			log.error("Failed to read response request parameters" + e);
+			errorCollector.addError(new Throwable(
+					"Failed to read response request parameters: ", e));
 		}
 
 		// Get Context ID from the user session
@@ -190,17 +201,20 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		if (wctx != null && "1".equals(wctx)) {
 			try { // Check token validity
 				if (!prevId.equals(curId)) {
-					log.debug("Retrieved wctx parameter value doesn't match passed value. Passed: " + prevId
-							+ " retrieved: " + curId);
+					log.debug("Retrieved wctx parameter value doesn't match passed value. Passed: "
+							+ prevId + " retrieved: " + curId);
 					return false;
 				}
 				STSTokenValidator validator = new STSTokenValidator();
+				validator.setSTSErrorCollector(errorCollector);
 				validator.setContext(prevId);
 				// Get parameters from Xwiki configuration
 				validator.setIssuer(props.getIssuer(context));
-				log.debug("props.getIssuer(context) " + props.getIssuer(context));
-				log.debug("checkSTSResponse(props.getIssuer(context)) " + props.getIssuer(context));
-				validator.setEntityId(props.getEntityId(context));
+				log.debug("props.getIssuer(context) "
+						+ props.getIssuer(context));
+				log.debug("checkSTSResponse(props.getIssuer(context)) "
+						+ props.getIssuer(context));
+				STSTokenValidator.setEntityId(props.getEntityId(context));
 				validator.setIssuerDN(props.getIssuerDN(context));
 				List<String> subjectDNs = new ArrayList<String>();
 				subjectDNs.add(props.getSubjectDNs(context));
@@ -212,49 +226,63 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 				validator.setCertificate(props.getCertificate(context));
 				// If time control is set, use time validation
 				if (wct != null && "1".equals(wct)) {
-					int maxClockSkew = Integer.parseInt(props.getWfresh(context)) * 60 * 1000;
+					int maxClockSkew = Integer.parseInt(props
+							.getWfresh(context)) * 60 * 1000;
 					validator.setMaxClockSkew(maxClockSkew);
 					validator.setValidateExpiration(true);
 				} else
 					validator.setValidateExpiration(false);
-				List<STSClaim> claims = validator.validate(myRequest.getParameter("wresult"));
+				List<STSClaim> claims = validator.validate(myRequest
+						.getParameter("wresult"));
 				log.trace("Token claims: " + claims);
 
 			} catch (Exception e) {
 				// as validator returns validation errors as exceptions
 				// log them only in debug mode
-				log.error("Failed to validate token\n" + e.getMessage() + " cause:" + e.getCause());
+				log.error("Failed to validate token\n" + e);
+				errorCollector.addError(new Throwable(
+						"Failed to validate token: ", e));
 				return false;
 			}
 
 			try {
-				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+				DocumentBuilderFactory dbf = DocumentBuilderFactory
+						.newInstance();
 				DocumentBuilder db = dbf.newDocumentBuilder();
-				Document doc = db.parse(new ByteArrayInputStream(stsResponse.getBytes("utf-8")));
+				Document doc = db.parse(new ByteArrayInputStream(stsResponse
+						.getBytes("utf-8")));
 				doc.getDocumentElement().normalize();
-				log.debug("Root element:" + doc.getDocumentElement().getNodeName());
+				log.debug("Root element:"
+						+ doc.getDocumentElement().getNodeName());
 				NodeList nodeList = doc.getElementsByTagName("saml:Attribute");
 				log.debug("Node list length:" + nodeList.getLength());
 				// Process all attributes
 				for (int i = 0; i < nodeList.getLength(); i++) {
 					Node node = nodeList.item(i);
-					String attrName = node.getAttributes().getNamedItem("AttributeName").getTextContent();
-					String attrValue = node.getChildNodes().item(0).getTextContent();
+					String attrName = node.getAttributes()
+							.getNamedItem("AttributeName").getTextContent();
+					String attrValue = node.getChildNodes().item(0)
+							.getTextContent();
 					// CAPITAL
 					if ("CAPITAL".equals(props.getDataFormat(context)))
 						attrValue = attrValue.toUpperCase();
 					// Title
 					if ("Title".equals(props.getDataFormat(context)))
 						attrValue = attrValue.substring(0, 1).toUpperCase()
-								+ ((attrValue.length() > 1) ? attrValue.substring(1).toLowerCase() : "");
+								+ ((attrValue.length() > 1) ? attrValue
+										.substring(1).toLowerCase() : "");
 					log.debug("Node:" + attrName + ", value:" + attrValue);
 					attributes.put(attrName, attrValue);
 				}
 				// get authentication method (should be known for legal reasons)
-				authType = doc.getElementsByTagName("saml:AuthenticationStatement").item(0).getAttributes()
+				authType = doc
+						.getElementsByTagName("saml:AuthenticationStatement")
+						.item(0).getAttributes()
 						.getNamedItem("AuthenticationMethod").getNodeValue();
 			} catch (Exception e) {
 				log.error("Failed reading STS response\n" + e);
+				errorCollector.addError(new Throwable(
+						"Failed reading STS response: ", e));
 				return false;
 			}
 		} else {
@@ -262,11 +290,13 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		}
 
 		// let's map the data
-		Map<String, String> userData = getExtendedInformation(attributes, context);
-		String personID = (String) attributes.get(props.getIdField(context));
+		Map<String, String> userData = getExtendedInformation(attributes,
+				context);
+		String personID = attributes.get(props.getIdField(context));
 		// set conventional person code format for NORDEA, PAREX, SEB banks
 		String person_ID;
-		if (personID != null && personID.indexOf("-") < 0 && personID.length() == 11) {
+		if (personID != null && personID.indexOf('-') < 0
+				&& personID.length() == 11) {
 			person_ID = personID.substring(0, 6) + "-" + personID.substring(6);
 			log.debug("Changed person ID from " + personID + " to " + person_ID);
 		} else
@@ -280,19 +310,23 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		String stsAuthClassIdField = props.getStsAuthClassIdField(context);
 		String sql = "select distinct doc.fullName from XWikiDocument as doc, BaseObject as obj, StringProperty as nameidprop where"
 				+ " doc.fullName=obj.name and obj.className='XWiki.STSAuthClass' and obj.id=nameidprop.id.id and nameidprop.id.name='"
-				+ stsAuthClassIdField + "' and nameidprop.value='" + person_ID + "'";
+				+ stsAuthClassIdField
+				+ "' and nameidprop.value='"
+				+ person_ID
+				+ "'";
 		log.debug("XWiki search SQL string: " + sql);
 		List<Object> list = context.getWiki().search(sql, context);
 		String validFullUserName = null;
 		String validUserName = null;
 
-		if (list.size() == 0) {
+		if (list.isEmpty()) {
 			// User does not exist. Let's generate a unique page name
 			log.debug("Did not find XWiki User. Generating it.");
 			String userName = generateXWikiUsername(userData, context);
-			if (userName.equals(""))
+			if ("".equals(userName))
 				userName = "User";
-			validUserName = context.getWiki().getUniquePageName("XWiki", userName, context);
+			validUserName = context.getWiki().getUniquePageName("XWiki",
+					userName, context);
 			validFullUserName = "XWiki." + validUserName;
 			log.debug("Generated XWiki User Name " + validFullUserName);
 
@@ -317,13 +351,19 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 					// create user
 					userData.put("active", "1");
 
-					int result = context.getWiki().createUser(validUserName, userData, "XWiki.XWikiUsers",
-							"#includeForm(\"XWiki.XWikiUserSheet\")", "edit", context);
+					int result = context.getWiki().createUser(validUserName,
+							userData, "XWiki.XWikiUsers",
+							"#includeForm(\"XWiki.XWikiUserSheet\")", "edit",
+							context);
 					if (result < 0) {
-						log.error("Failed to create user " + validFullUserName + " with code " + result);
+						log.error("Failed to create user " + validFullUserName
+								+ " with code " + result);
+						errorCollector.addError(new Throwable(
+								"Failed to create user: "));
 						return false;
 					}
-					XWikiDocument userDoc = context.getWiki().getDocument(validFullUserName, context);
+					XWikiDocument userDoc = context.getWiki().getDocument(
+							validFullUserName, context);
 					BaseObject userObj = userDoc.getObject("XWiki.XWikiUsers");
 					// Fix bug for e-mail field where "$email" value is set on
 					// creation
@@ -332,20 +372,24 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 					// allow
 					// changing his
 					// name, surname and password
-					BaseObject rightsObj = userDoc.getObject("XWiki.XWikiRights", 1);
+					BaseObject rightsObj = userDoc.getObject(
+							"XWiki.XWikiRights", 1);
 					rightsObj.set("allow", 1, context);
 					rightsObj.set("levels", "view", context);
 					// set person ID and authentication type
-					BaseObject stsObj = userDoc.newObject("XWiki.STSAuthClass", context);
+					BaseObject stsObj = userDoc.newObject("XWiki.STSAuthClass",
+							context);
 					stsObj.set("nameid", person_ID, context);
 					stsObj.set("authtype", authType, context);
 					context.getWiki().saveDocument(userDoc, context);
-					log.info("New user " + validFullUserName + " has been successfully created. Nameid: " + person_ID
-							+ " authtype: " + authType);
+					log.info("New user " + validFullUserName
+							+ " has been successfully created. Nameid: "
+							+ person_ID + " authtype: " + authType);
 
 				} else {
 
-					XWikiDocument userDoc = context.getWiki().getDocument(validFullUserName, context);
+					XWikiDocument userDoc = context.getWiki().getDocument(
+							validFullUserName, context);
 					BaseObject userObj = userDoc.getObject("XWiki.XWikiUsers");
 					boolean updated = false;
 					for (Map.Entry<String, String> entry : userData.entrySet()) {
@@ -368,17 +412,22 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 						stsObj.set("authtype", authType, context);
 						updated = true;
 					}
-					if (updated == true) {
+					if (updated) {
 						context.getWiki().saveDocument(userDoc, context);
-						log.info("Existing user " + validFullUserName + " has been successfully updated. Nameid: "
+						log.info("Existing user " + validFullUserName
+								+ " has been successfully updated. Nameid: "
 								+ person_ID + " authtype: " + authType);
 					} else
-						log.info("Existing user " + validFullUserName
-								+ " was found. Properties were not changed. Nameid: " + person_ID + " authtype: "
-								+ authType);
+						log.info("Existing user "
+								+ validFullUserName
+								+ " was found. Properties were not changed. Nameid: "
+								+ person_ID + " authtype: " + authType);
 				}
 			} catch (Exception e) {
-				log.error("Failed to create user " + validFullUserName + "\n" + e);
+				log.error("Failed to create user " + validFullUserName + "\n"
+						+ e);
+				errorCollector.addError(new Throwable(
+						"Failed to create user: ", e));
 				return false;
 			} finally {
 				context.setDatabase(database);
@@ -386,12 +435,15 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 
 		}
 
-		log.debug("Setting authentication in session for user " + validFullUserName);
+		log.debug("Setting authentication in session for user "
+				+ validFullUserName);
 		// mark that we have authenticated the user in the session
-		context.getRequest().getSession().setAttribute(props.getAuthField(context), validFullUserName);
+		context.getRequest().getSession()
+				.setAttribute(props.getAuthField(context), validFullUserName);
 
 		// need to redirect now
-		String sourceurl = (String) request.getSession().getAttribute("saml_url");
+		String sourceurl = (String) request.getSession().getAttribute(
+				"saml_url");
 
 		log.debug("Redirecting after valid authentication to " + sourceurl);
 		try {
@@ -400,6 +452,8 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 			return true;
 		} catch (Exception e) {
 			log.error("Failed to redirect after authentication\n" + e);
+			errorCollector.addError(new Throwable(
+					"Failed to redirect after authentication: ", e));
 		}
 		return false;
 	}
@@ -424,21 +478,27 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 			Enumeration<String> en = request.getParameterNames();
 			log.trace("request parameters=============");
 			while (en.hasMoreElements()) {
-				String paramName = (String) en.nextElement();
+				String paramName = en.nextElement();
 				String paramValue = request.getParameter(paramName);
 				log.trace(paramName + "=" + URLEncoder.encode(paramValue));
 			}
 		} catch (Exception e) {
 			log.error("Got error during printing request parameters: " + e);
+			errorCollector.addError(new Throwable(
+					"Got error during printing request parameters: ", e));
+
 		}
 
 		// check in the session if the user is already authenticated
-		String stsUserName = (String) context.getRequest().getSession().getAttribute(props.getAuthField(context));
+		String stsUserName = (String) context.getRequest().getSession()
+				.getAttribute(props.getAuthField(context));
 		if (stsUserName == null) {
 			// check standard authentication
-			if (context.getRequest().getCookie("username") != null || context.getAction().equals("logout")
+			if (context.getRequest().getCookie("username") != null
+					|| "logout".equals(context.getAction())
 					|| context.getAction().startsWith("login")
-					|| "1".equals(context.getRequest().getParameter("basicauth"))) {
+					|| "1".equals(context.getRequest()
+							.getParameter("basicauth"))) {
 				log.debug("Fallback to standard authentication");
 				return super.checkAuth(context);
 			}
@@ -448,6 +508,8 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 				return null;
 		} else {
 			log.debug("Found authentication of user " + stsUserName);
+			log.info(errorCollector.listErrors());
+			errorCollector.clearErrorList();
 			if (context.isMainWiki()) {
 				return new XWikiUser(stsUserName);
 			} else {
@@ -464,11 +526,12 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 	 *      java.lang.String, java.lang.String, com.xpn.xwiki.XWikiContext)
 	 */
 	@Override
-	public XWikiUser checkAuth(String username, String password, String rememberme, XWikiContext context)
-			throws XWikiException {
-		log.trace("checkAuth(): " + username + ", " + password + ", " + rememberme);
+	public XWikiUser checkAuth(String username, String password,
+			String rememberme, XWikiContext context) throws XWikiException {
+		log.trace("checkAuth(): " + username + ", " + password + ", "
+				+ rememberme);
 		String auth = getAuthFieldValue(context);
-		if ((auth == null) || auth.equals("")) {
+		if ((auth == null) || "".equals(auth)) {
 			return super.checkAuth(context);
 		} else {
 			return checkAuth(context);
@@ -476,17 +539,21 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 	}
 
 	private String getAuthFieldValue(XWikiContext context) {
-		String val = (String) context.getRequest().getSession(true).getAttribute(props.getAuthField(context));
+		String val = (String) context.getRequest().getSession(true)
+				.getAttribute(props.getAuthField(context));
 		log.trace("getAuthFieldValue(): " + val);
 		return val;
 	}
 
-	private Map<String, String> getExtendedInformation(Map data, XWikiContext context) {
+	private Map<String, String> getExtendedInformation(Map data,
+			XWikiContext context) {
 		log.trace("ExtendedInformation()");
 		Map<String, String> extInfos = new HashMap<String, String>();
-		for (Map.Entry<String, String> entry : getFieldMapping(context).entrySet()) {
+		for (Map.Entry<String, String> entry : getFieldMapping(context)
+				.entrySet()) {
 			String dataValue = (String) data.get(entry.getKey());
-			log.trace(" STS:" + entry.getKey() + ", value:" + dataValue + ", xwiki field:" + entry.getValue());
+			log.trace(" STS:" + entry.getKey() + ", value:" + dataValue
+					+ ", xwiki field:" + entry.getValue());
 			if (dataValue != null) {
 				extInfos.put(entry.getValue(), dataValue);
 			}
@@ -508,15 +575,15 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 	private String generateXWikiUsername(Map userData, XWikiContext context) {
 		log.trace("generateXWikiUsername()");
 		String[] userFields = getXWikiUsernameRule(context);
-		String userName = "";
+		StringBuilder userName = new StringBuilder("");
 		for (String field : userFields) {
 			String value = (String) userData.get(field);
 			if (value != null && value.length() > 0) {
-				userName += value;
+				userName.append(value);
 			}
 		}
 		log.debug("XWikiUsername: " + userName);
-		return userName;
+		return userName.toString();
 	}
 
 	/**
@@ -525,10 +592,10 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 	 * @return the mapping between HTTP header fields names and XWiki user
 	 *         profile fields names.
 	 */
-	private Map<String, String> getFieldMapping(XWikiContext context) {
+	private static Map<String, String> getFieldMapping(XWikiContext context) {
 		log.trace("getFieldMapping()");
-		if (this.userMappings == null) {
-			this.userMappings = new HashMap<String, String>();
+		if (userMappings == null) {
+			userMappings = new HashMap<String, String>();
 
 			String fieldMapping = props.getFieldMapping(context);
 			String[] fields = fieldMapping.split(",");
@@ -538,12 +605,19 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 				if (2 == field.length) {
 					String xwikiattr = field[0].trim();
 					String headerattr = field[1].trim();
-					this.userMappings.put(headerattr, xwikiattr);
+					userMappings.put(headerattr, xwikiattr);
 				} else {
-					log.error("Error parsing STS fields_mapping attribute in xwiki.cfg: " + fields[j]);
+					log.error("Error parsing STS fields_mapping attribute in xwiki.cfg: "
+							+ fields[j]);
+
 				}
 			}
 		}
-		return this.userMappings;
+		return userMappings;
+	}
+
+	public void listErrors() {
+		log.info(errorCollector.listErrors());
+		errorCollector.clearErrorList();
 	}
 }

@@ -27,6 +27,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import com.xpn.xwiki.XWiki;
@@ -119,10 +120,12 @@ public class XWikiSTSAuthenticatorTest extends AbstractComponentTestCase {
 	@Override
 	@After
 	public void tearDown() throws Exception {
+		auth.listErrors();
 		Utils.setComponentManager(null);
 		super.tearDown();
-	}
 
+	}
+	
 	@Test
 	public void showLoginTest() {
 		log.info(context.toString());

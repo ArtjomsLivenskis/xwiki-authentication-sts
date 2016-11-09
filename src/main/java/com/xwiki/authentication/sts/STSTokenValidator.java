@@ -45,7 +45,6 @@ import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.opensaml.Configuration;
 import org.opensaml.DefaultBootstrap;
-import org.opensaml.common.SAMLObject;
 import org.opensaml.common.SignableSAMLObject;
 import org.opensaml.xml.ConfigurationException;
 import org.opensaml.xml.XMLObject;
@@ -76,21 +75,21 @@ import org.xml.sax.SAXException;
  For new authentication method to work  this lines in xwiki/WEB-INF/xwiki.cfg were changed
 
  < xwiki.authentication.sts.issuer=http://www.latvija.lv/trust
----
-> xwiki.authentication.sts.issuer=http://www.latvija.lv/sts
-705c705
-< xwiki.authentication.sts.entity_id=http://www.latvija.lv/trust
----
-> xwiki.authentication.sts.entity_id=http://www.latvija.lv/sts
-707c707
-< xwiki.authentication.sts.issuer_dn=CN=IVIS Root CA
----
-> xwiki.authentication.sts.issuer_dn=CN=VISS Root CA, DC=viss, DC=int
-709c709
-< xwiki.authentication.sts.subject_dns=EMAILADDRESS=cisu.help@vraa.gov.lv, CN=IVIS.LVP.STS_PROD, OU=VPISD, O=VRAA, L=Riga, ST=Riga, C=LV
----
-> xwiki.authentication.sts.subject_dns=EMAILADDRESS=cisu.help@vraa.gov.lv, CN=VISS.LVP.STS, OU=VPISD, O=VRAA, L=Riga, ST=Riga, C=LV
-*/
+ ---
+ > xwiki.authentication.sts.issuer=http://www.latvija.lv/sts
+ 705c705
+ < xwiki.authentication.sts.entity_id=http://www.latvija.lv/trust
+ ---
+ > xwiki.authentication.sts.entity_id=http://www.latvija.lv/sts
+ 707c707
+ < xwiki.authentication.sts.issuer_dn=CN=IVIS Root CA
+ ---
+ > xwiki.authentication.sts.issuer_dn=CN=VISS Root CA, DC=viss, DC=int
+ 709c709
+ < xwiki.authentication.sts.subject_dns=EMAILADDRESS=cisu.help@vraa.gov.lv, CN=IVIS.LVP.STS_PROD, OU=VPISD, O=VRAA, L=Riga, ST=Riga, C=LV
+ ---
+ > xwiki.authentication.sts.subject_dns=EMAILADDRESS=cisu.help@vraa.gov.lv, CN=VISS.LVP.STS, OU=VPISD, O=VRAA, L=Riga, ST=Riga, C=LV
+ */
 
 @SuppressWarnings("deprecation")
 public class STSTokenValidator {
@@ -104,12 +103,14 @@ public class STSTokenValidator {
 	private String context;
 	private String issuer;
 	X509Certificate certificate;
+	STSErrorCollector errorCollector;
 
 	public STSTokenValidator() throws ConfigurationException {
 		this(new ArrayList<String>(), new ArrayList<URI>());
 	}
 
-	public STSTokenValidator(List<String> trustedSubjectDNs, List<URI> audienceUris) throws ConfigurationException {
+	public STSTokenValidator(List<String> trustedSubjectDNs,
+			List<URI> audienceUris) throws ConfigurationException {
 		super();
 		this.trustedSubjectDNs = trustedSubjectDNs;
 		this.audienceUris = audienceUris;
@@ -128,13 +129,16 @@ public class STSTokenValidator {
 		this.validateExpiration = value;
 	}
 
-	public void setEntityId(String value) {
+	public static void setEntityId(String value) {
 		entityId = value;
 	}
 
-	public List<STSClaim> validate(String envelopedToken) throws ParserConfigurationException, SAXException,
-			IOException, STSException, ConfigurationException, CertificateException, KeyException, SecurityException,
-			ValidationException, UnmarshallingException, URISyntaxException, NoSuchAlgorithmException {
+	public List<STSClaim> validate(String envelopedToken)
+			throws ParserConfigurationException, SAXException, IOException,
+			STSException, ConfigurationException, CertificateException,
+			KeyException, SecurityException, ValidationException,
+			UnmarshallingException, URISyntaxException,
+			NoSuchAlgorithmException {
 
 		SignableSAMLObject samlToken;
 		boolean trusted = false;
@@ -146,17 +150,28 @@ public class STSTokenValidator {
 			samlToken = getSamlTokenFromSamlResponse(envelopedToken);
 		}
 
-		log.debug("\n===== envelopedToken ========\n" + samlToken.getDOM().getTextContent() + "\n==========");
-		String currentContext = getAttrVal(envelopedToken, "t:RequestSecurityTokenResponse", "Context");
+		log.debug("\n===== envelopedToken ========\n"
+				+ samlToken.getDOM().getTextContent() + "\n==========");
+		String currentContext = getAttrVal(envelopedToken,
+				"t:RequestSecurityTokenResponse", "Context");
 		if (!context.equals(currentContext)) {
-			throw new STSException("Wrong token Context. Suspected: " + context + " got: " + currentContext);
+			errorCollector.addError(new Throwable("Wrong token Context. Suspected: " + context
+					+ " got: " + currentContext));
+			throw new STSException("Wrong token Context. Suspected: " + context
+					+ " got: " + currentContext);
+
 		}
 
 		if (this.validateExpiration) {
-			Instant created = new Instant(getElementVal(envelopedToken, "wsu:Created"));
-			Instant expires = new Instant(getElementVal(envelopedToken, "wsu:Expires"));
+			Instant created = new Instant(getElementVal(envelopedToken,
+					"wsu:Created"));
+			Instant expires = new Instant(getElementVal(envelopedToken,
+					"wsu:Expires"));
 			if (!checkExpiration(created, expires)) {
-				throw new STSException("Token Created or Expires elements have been expired");
+				errorCollector.addError(new Throwable("Token Created or Expires elements have been expired"));
+				throw new STSException(
+						"Token Created or Expires elements have been expired");
+
 			}
 		} else {
 			log.warn("Token time was not validated. To validate, set xwiki.authentication.sts.wct=1");
@@ -166,14 +181,18 @@ public class STSTokenValidator {
 			log.debug("\n");
 			log.debug("STSTokenValidator: cert is null, using old method");
 
-			if (issuer != null && issuerDN != null && trustedSubjectDNs.size() != 0) {
+			if (issuer != null && issuerDN != null
+					&& !trustedSubjectDNs.isEmpty()) {
 
-				if (!issuer.equals(getAttrVal(envelopedToken, "saml:Assertion", "Issuer"))) {
+				if (!issuer.equals(getAttrVal(envelopedToken, "saml:Assertion",
+						"Issuer"))) {
+					errorCollector.addError(new Throwable("Wrong token Issuer"));
 					throw new STSException("Wrong token Issuer");
 				}
 
 				// Check SAML assertions
 				if (!validateIssuerDN(samlToken, issuerDN)) {
+					errorCollector.addError(new Throwable("Wrong token IssuerDN"));
 					throw new STSException("Wrong token IssuerDN");
 				}
 
@@ -182,11 +201,13 @@ public class STSTokenValidator {
 				}
 
 				if (!trusted) {
+					errorCollector.addError(new Throwable("Wrong token SubjectDN"));
 					throw new STSException("Wrong token SubjectDN");
 				}
 			} else {
 				log.debug("\n");
 				log.debug("STSTokenValidator: Nothing to validate against");
+				errorCollector.addError(new Throwable("Nothing to validate against"));
 				throw new STSException("Nothing to validate against");
 			}
 
@@ -194,7 +215,9 @@ public class STSTokenValidator {
 			log.debug("\n");
 			log.debug("STSTokenValidator: Using cert equals");
 			if (!certificate.equals(certFromToken(samlToken))) {
-				throw new STSException("Local certificate didn't match the user suplied one");
+				errorCollector.addError(new Throwable("Local certificate didn't match the user suplied one"));
+				throw new STSException(
+						"Local certificate didn't match the user suplied one");
 			}
 		}
 
@@ -211,8 +234,10 @@ public class STSTokenValidator {
 		}
 
 		if (!validAudience) {
-			throw new STSException(
-					String.format("The token applies to an untrusted audience: %s", new Object[] { audience }));
+			errorCollector.addError(new Throwable("The token applies to an untrusted audience"));
+			throw new STSException(String.format(
+					"The token applies to an untrusted audience: %s",
+					new Object[] { audience }));
 		}
 
 		List<STSClaim> claims = null;
@@ -220,42 +245,44 @@ public class STSTokenValidator {
 			claims = getClaims((org.opensaml.saml1.core.Assertion) samlToken);
 		}
 
-		if (this.validateExpiration) {
-			if (samlToken instanceof org.opensaml.saml1.core.Assertion) {
-				Instant notBefore = ((org.opensaml.saml1.core.Assertion) samlToken).getConditions().getNotBefore()
-						.toInstant();
-				Instant notOnOrAfter = ((org.opensaml.saml1.core.Assertion) samlToken).getConditions().getNotOnOrAfter()
-						.toInstant();
-				if (!checkExpiration(notBefore, notOnOrAfter)) {
-					throw new STSException("Token SAML Conditions: NotBefore or NotOnOrAfter has been expired");
-				}
+		if (this.validateExpiration
+				&& samlToken instanceof org.opensaml.saml1.core.Assertion) {
+			Instant notBefore = ((org.opensaml.saml1.core.Assertion) samlToken)
+					.getConditions().getNotBefore().toInstant();
+			Instant notOnOrAfter = ((org.opensaml.saml1.core.Assertion) samlToken)
+					.getConditions().getNotOnOrAfter().toInstant();
+			if (!checkExpiration(notBefore, notOnOrAfter)) {
+				errorCollector.addError(new Throwable("Token SAML Conditions: NotBefore or NotOnOrAfter has been expired"));
+				throw new STSException(
+						"Token SAML Conditions: NotBefore or NotOnOrAfter has been expired");
 			}
 		}
 
 		// Check token certificate and signature
 		boolean valid = validateToken(samlToken);
 		if (!valid) {
+			errorCollector.addError(new Throwable("Invalid signature"));
 			throw new STSException("Invalid signature");
 		}
 
 		return claims;
 	}
 
-	private static SignableSAMLObject getSamlTokenFromSamlResponse(String samlResponse)
-			throws ParserConfigurationException, SAXException, IOException, UnmarshallingException {
+	private static SignableSAMLObject getSamlTokenFromSamlResponse(
+			String samlResponse) throws ParserConfigurationException,
+			SAXException, IOException, UnmarshallingException {
 		Document document = getDocument(samlResponse);
 
 		Unmarshaller unmarshaller = Configuration.getUnmarshallerFactory()
 				.getUnmarshaller(document.getDocumentElement());
 		org.opensaml.saml2.core.Response response = (org.opensaml.saml2.core.Response) unmarshaller
 				.unmarshall(document.getDocumentElement());
-		SignableSAMLObject samlToken = (SignableSAMLObject) response.getAssertions().get(0);
-
-		return samlToken;
+		return response.getAssertions().get(0);
 	}
 
 	private static SignableSAMLObject getSamlTokenFromRstr(String rstr)
-			throws ParserConfigurationException, SAXException, IOException, UnmarshallingException, STSException {
+			throws ParserConfigurationException, SAXException, IOException,
+			UnmarshallingException, STSException {
 		Document document = getDocument(rstr);
 
 		String xpath = "//*[local-name() = 'Assertion']";
@@ -265,23 +292,25 @@ public class STSTokenValidator {
 		try {
 			nodes = org.apache.xpath.XPathAPI.selectNodeList(document, xpath);
 		} catch (TransformerException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 
-		if (nodes.getLength() == 0) {
+		if (nodes != null && nodes.getLength() == 0) {
 			throw new STSException("SAML token was not found");
+		} else {
+			Element samlTokenElement = (Element) nodes.item(0);
+			Unmarshaller unmarshaller = Configuration.getUnmarshallerFactory()
+					.getUnmarshaller(samlTokenElement);
+			return (SignableSAMLObject) unmarshaller
+					.unmarshall(samlTokenElement);
 		}
-
-		Element samlTokenElement = (Element) nodes.item(0);
-		Unmarshaller unmarshaller = Configuration.getUnmarshallerFactory().getUnmarshaller(samlTokenElement);
-		SignableSAMLObject samlToken = (SignableSAMLObject) unmarshaller.unmarshall(samlTokenElement);
-
-		return samlToken;
 	}
 
-	private static String getAudienceUri(org.opensaml.saml1.core.Assertion samlAssertion) {
-		org.opensaml.saml1.core.Audience audienceUri = samlAssertion.getConditions().getAudienceRestrictionConditions()
-				.get(0).getAudiences().get(0);
+	private static String getAudienceUri(
+			org.opensaml.saml1.core.Assertion samlAssertion) {
+		org.opensaml.saml1.core.Audience audienceUri = samlAssertion
+				.getConditions().getAudienceRestrictionConditions().get(0)
+				.getAudiences().get(0);
 		String audienceUriStr = audienceUri.getUri();
 		log.trace("AudienceUri: " + audienceUriStr);
 		return audienceUriStr;
@@ -290,38 +319,43 @@ public class STSTokenValidator {
 	private boolean checkExpiration(Instant notBefore, Instant notOnOrAfter) {
 		Instant now = new Instant();
 		Duration skew = new Duration(maxClockSkew);
-		log.debug("Time expiration. Now:" + now + " now+sqew: " + now.plus(skew) + " now-sqew: " + now.minus(skew)
+		log.debug("Time expiration. Now:" + now + " now+sqew: "
+				+ now.plus(skew) + " now-sqew: " + now.minus(skew)
 				+ " notBefore: " + notBefore + " notAfter: " + notOnOrAfter);
-		if (now.plus(skew).isAfter(notBefore) && now.minus(skew).isBefore(notOnOrAfter)) {
+		if (now.plus(skew).isAfter(notBefore)
+				&& now.minus(skew).isBefore(notOnOrAfter)) {
 			log.debug("Time is in range");
 			return true;
 		}
 		return false;
 	}
 
-	private static boolean validateToken(SignableSAMLObject samlToken) throws SecurityException, ValidationException,
-			ConfigurationException, UnmarshallingException, CertificateException, KeyException {
+	private static boolean validateToken(SignableSAMLObject samlToken)
+			throws SecurityException, ValidationException,
+			ConfigurationException, UnmarshallingException,
+			CertificateException, KeyException {
 
 		// Validate XML structure
 		samlToken.validate(true);
 
 		Signature signature = samlToken.getSignature();
-		// KeyInfo keyInfo = signature.getKeyInfo();
-		// X509Certificate certificate = (X509Certificate)
-		// KeyInfoHelper.getCertificates(keyInfo).get(0);
 		X509Certificate certificate = certFromToken(samlToken);
 
 		// Certificate data
 		log.debug("certificate issuerDN: " + certificate.getIssuerDN());
-		log.debug("certificate issuerUniqueID: " + certificate.getIssuerUniqueID());
-		log.debug("certificate issuerX500Principal: " + certificate.getIssuerX500Principal());
+		log.debug("certificate issuerUniqueID: "
+				+ certificate.getIssuerUniqueID());
+		log.debug("certificate issuerX500Principal: "
+				+ certificate.getIssuerX500Principal());
 		log.debug("certificate notBefore: " + certificate.getNotBefore());
 		log.debug("certificate notAfter: " + certificate.getNotAfter());
 		log.debug("certificate serialNumber: " + certificate.getSerialNumber());
 		log.debug("certificate sigAlgName: " + certificate.getSigAlgName());
 		log.debug("certificate sigAlgOID: " + certificate.getSigAlgOID());
-		log.debug("certificate signature: " + new String(certificate.getSignature()));
-		log.debug("certificate issuerX500Principal: " + certificate.getIssuerX500Principal().toString());
+		log.debug("certificate signature: "
+				+ new String(certificate.getSignature()));
+		log.debug("certificate issuerX500Principal: "
+				+ certificate.getIssuerX500Principal().toString());
 		log.debug("certificate publicKey: " + certificate.getPublicKey());
 		log.debug("certificate subjectDN: " + certificate.getSubjectDN());
 		log.debug("certificate sigAlgOID: " + certificate.getSigAlgOID());
@@ -339,14 +373,18 @@ public class STSTokenValidator {
 		log.debug("cred privateKey: " + cred.getPrivateKey());
 		log.debug("cred publicKey: " + cred.getPublicKey());
 		log.debug("cred secretKey: " + cred.getSecretKey());
-		log.debug("cred entityCertificateChain: " + cred.getEntityCertificateChain());
+		log.debug("cred entityCertificateChain: "
+				+ cred.getEntityCertificateChain());
 
 		ArrayList<Credential> trustedCredentials = new ArrayList<Credential>();
 		trustedCredentials.add(cred);
 
-		CollectionCredentialResolver credResolver = new CollectionCredentialResolver(trustedCredentials);
-		KeyInfoCredentialResolver kiResolver = SecurityTestHelper.buildBasicInlineKeyInfoResolver();
-		ExplicitKeySignatureTrustEngine engine = new ExplicitKeySignatureTrustEngine(credResolver, kiResolver);
+		CollectionCredentialResolver credResolver = new CollectionCredentialResolver(
+				trustedCredentials);
+		KeyInfoCredentialResolver kiResolver = SecurityTestHelper
+				.buildBasicInlineKeyInfoResolver();
+		ExplicitKeySignatureTrustEngine engine = new ExplicitKeySignatureTrustEngine(
+				credResolver, kiResolver);
 
 		CriteriaSet criteriaSet = new CriteriaSet();
 		criteriaSet.add(new EntityIDCriteria(entityId));
@@ -354,51 +392,63 @@ public class STSTokenValidator {
 		Base64 decoder = new Base64();
 		// In trace mode write certificate in the file
 		if (log.isTraceEnabled()) {
-			String certEncoded = new String(decoder.encode(certificate.getEncoded()));
+			String certEncoded = new String(decoder.encode(certificate
+					.getEncoded()));
 			try {
 				FileUtils.writeStringToFile(new File("/tmp/Certificate.cer"),
-						"-----BEGIN CERTIFICATE-----\n" + certEncoded + "\n-----END CERTIFICATE-----");
+						"-----BEGIN CERTIFICATE-----\n" + certEncoded
+								+ "\n-----END CERTIFICATE-----");
 				log.trace("Certificate file was saved in: /tmp/Certificate.cer");
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				log.error(e1);
 			}
 		}
 		return engine.validate(signature, criteriaSet);
 	}
 
-	private static boolean validateSubjectDN(SignableSAMLObject samlToken, String subjectName)
-			throws UnmarshallingException, ValidationException, CertificateException {
+	private static boolean validateSubjectDN(SignableSAMLObject samlToken,
+			String subjectName) throws UnmarshallingException,
+			ValidationException, CertificateException {
 		Signature signature = samlToken.getSignature();
 		KeyInfo keyInfo = signature.getKeyInfo();
 		X509Certificate pubKey = KeyInfoHelper.getCertificates(keyInfo).get(0);
 		String subjectDN = pubKey.getSubjectDN().getName();
-		log.trace("passed subjectName: '" + subjectName + "' certificate SubjectDN: '" + subjectDN);
+		log.trace("passed subjectName: '" + subjectName
+				+ "' certificate SubjectDN: '" + subjectDN);
 		return subjectDN.equals(subjectName);
 	}
 
-	private static boolean validateIssuerDN(SignableSAMLObject samlToken, String issuerName)
-			throws UnmarshallingException, ValidationException, CertificateException {
+	private static boolean validateIssuerDN(SignableSAMLObject samlToken,
+			String issuerName) throws UnmarshallingException,
+			ValidationException, CertificateException {
 
 		Signature signature = samlToken.getSignature();
 		KeyInfo keyInfo = signature.getKeyInfo();
 		X509Certificate pubKey = KeyInfoHelper.getCertificates(keyInfo).get(0);
 		String issuer = pubKey.getIssuerDN().getName();
-		log.trace("passed issuerName: '" + issuerName + "' certificate IssuerDN: '" + issuer + "'");
+		log.trace("passed issuerName: '" + issuerName
+				+ "' certificate IssuerDN: '" + issuer + "'");
 		return issuer.equals(issuerName);
 	}
 
-	private static List<STSClaim> getClaims(org.opensaml.saml1.core.Assertion samlAssertion) throws SecurityException,
-			ValidationException, ConfigurationException, UnmarshallingException, CertificateException, KeyException {
+	private static List<STSClaim> getClaims(
+			org.opensaml.saml1.core.Assertion samlAssertion)
+			throws SecurityException, ValidationException,
+			ConfigurationException, UnmarshallingException,
+			CertificateException, KeyException {
 
 		ArrayList<STSClaim> claims = new ArrayList<STSClaim>();
 
-		List<org.opensaml.saml1.core.AttributeStatement> attributeStmts = samlAssertion.getAttributeStatements();
+		List<org.opensaml.saml1.core.AttributeStatement> attributeStmts = samlAssertion
+				.getAttributeStatements();
 
 		for (org.opensaml.saml1.core.AttributeStatement attributeStmt : attributeStmts) {
-			List<org.opensaml.saml1.core.Attribute> attributes = attributeStmt.getAttributes();
+			List<org.opensaml.saml1.core.Attribute> attributes = attributeStmt
+					.getAttributes();
 
 			for (org.opensaml.saml1.core.Attribute attribute : attributes) {
-				String claimType = attribute.getAttributeNamespace() + "/" + attribute.getAttributeName();
+				String claimType = attribute.getAttributeNamespace() + "/"
+						+ attribute.getAttributeName();
 				String claimValue = getValueFrom(attribute.getAttributeValues());
 				claims.add(new STSClaim(claimType, claimValue));
 			}
@@ -409,7 +459,7 @@ public class STSTokenValidator {
 
 	private static String getValueFrom(List<XMLObject> attributeValues) {
 
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 
 		for (XMLObject value : attributeValues) {
 			if (buffer.length() > 0)
@@ -420,25 +470,26 @@ public class STSTokenValidator {
 		return buffer.toString();
 	}
 
-	private static Document getDocument(String doc) throws ParserConfigurationException, SAXException, IOException {
+	private static Document getDocument(String doc)
+			throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 		DocumentBuilder documentbuilder = factory.newDocumentBuilder();
 		return documentbuilder.parse(new InputSource(new StringReader(doc)));
 	}
 
-	private String getAttrVal(String envelopedToken, String element, String attribute)
-			throws ParserConfigurationException, SAXException, IOException {
+	private String getAttrVal(String envelopedToken, String element,
+			String attribute) throws ParserConfigurationException,
+			SAXException, IOException {
 		Document doc = getDocument(envelopedToken);
-		String val = doc.getElementsByTagName(element).item(0).getAttributes().getNamedItem(attribute).getNodeValue();
-		return val;
+		return doc.getElementsByTagName(element).item(0).getAttributes()
+				.getNamedItem(attribute).getNodeValue();
 	}
 
 	private String getElementVal(String envelopedToken, String element)
 			throws ParserConfigurationException, SAXException, IOException {
 		Document doc = getDocument(envelopedToken);
-		String val = doc.getElementsByTagName(element).item(0).getTextContent();
-		return val;
+		return doc.getElementsByTagName(element).item(0).getTextContent();
 	}
 
 	public void setIssuerDN(String issuerDN) {
@@ -463,9 +514,15 @@ public class STSTokenValidator {
 
 	private static X509Certificate certFromToken(SignableSAMLObject token) {
 		try {
-			return KeyInfoHelper.getCertificates(token.getSignature().getKeyInfo()).get(0);
+			return KeyInfoHelper.getCertificates(
+					token.getSignature().getKeyInfo()).get(0);
 		} catch (CertificateException e) {
+			log.error(e);
 			return null;
 		}
+	}
+
+	public void setSTSErrorCollector(STSErrorCollector errorCollector) {
+		this.errorCollector = errorCollector;
 	}
 }
