@@ -282,12 +282,11 @@ public class STSTokenValidatorTest {
 		List<STSClaim> claims = null;
 		try {
 			claims = validator.validate(testToken);
-			log.error("testNegBadSignature failed");
 			log.error(validator.errorCollector.listErrors());
 		} catch (Exception e) {
 			Assert.assertEquals(claims, null);
 			Assert.assertEquals("Invalid signature", e.getMessage());
-			log.info("testNegBadSignature passed");
+			log.info("testNegBadToken passed");
 		} finally {
 			// Renew default settings
 			testFile = new File("testToken.xml");
