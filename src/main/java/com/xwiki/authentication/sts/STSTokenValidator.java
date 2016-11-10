@@ -100,15 +100,45 @@ import org.xml.sax.SAXException;
  */
 @SuppressWarnings("deprecation")
 public class  STSTokenValidator {
+	/**
+     * Log log - log - from LogFactory 
+     */
 	private static Log log = LogFactory.getLog(STSTokenValidator.class);
+	/**
+     * max ClockSkew - using to check time intervals / Before / After as a deviation
+     */
 	private int maxClockSkew;
+	/**
+     * max ClockSkew - max time interval in which may be a value
+     */
 	private List<String> trustedSubjectDNs;
+	/**
+     * max ClockSkew - http/https urls - 
+     */
 	private List<URI> audienceUris;
+	/**
+     * max ClockSkew - http/https urls - 
+     */
 	private boolean validateExpiration = true;
+	/**
+	* entityId - ID of the entity used for set entity id of the sertificate
+	*/
 	private static String entityId;
+	/**
+	* IssuerDN value from the certificate (will be extracted from samlToken)
+	*/
 	private String issuerDN;
+	/**
+	 * context
+	 */
 	private String context;
+	/** 
+	 * Name of Issuer DN - getIssuerDN
+	 */
 	private String issuer;
+	/** 
+	 * certificate made from SAMLToken
+	 */
 	X509Certificate certificate;
 
 	public STSTokenValidator() throws ConfigurationException {

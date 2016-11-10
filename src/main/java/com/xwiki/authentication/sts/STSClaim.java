@@ -32,8 +32,18 @@ import java.io.Serializable;
  * @version 1.0
  */
 public class STSClaim implements Serializable {
+	/**
+     * Save number of Serializable object's version as constant to make a life easer
+     */
 	private static final long serialVersionUID = -6595685426248469363L;
+	
+	/**
+     * Type of claim
+     */
 	private String claimType;
+	/**
+     * value of claim values comma seperated
+     */
 	private String claimValue;
 
 	public STSClaim(String claimType, String claimValue) {

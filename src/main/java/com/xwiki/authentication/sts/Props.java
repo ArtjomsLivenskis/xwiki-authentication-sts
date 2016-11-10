@@ -17,7 +17,6 @@ import com.xpn.xwiki.XWikiContext;
  * 
  * @version 1.0
  */
-
 class Props extends XWikiSTSAuthenticatorProperties {
 
 
@@ -30,8 +29,17 @@ class Props extends XWikiSTSAuthenticatorProperties {
 	 * 
 	 */
 	X509Certificate getCertificate(XWikiContext context) {
+	    /**
+		* filename - String contaings loaded from "xwiki.authentication.sts.cert_filename" parametr
+		*/
 		String filename = null;
+		/**
+		* File Input stream - to read our certificate
+		*/
 		FileInputStream fr = null;
+		/**
+		* cert - X509Certificate - hold some context
+		*/
 		X509Certificate cert = null;
 		try {
 			filename = context.getWiki().Param("xwiki.authentication.sts.cert_filename");

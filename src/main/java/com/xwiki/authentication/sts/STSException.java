@@ -30,6 +30,10 @@ package com.xwiki.authentication.sts;
  * @version 1.0
  */
 public class STSException extends Exception {
+	/**
+	* Static final long - serialVersionUID - Version UID - to make it easy to check objects version
+	* control without any differences between UIDs
+	*/
     private static final long serialVersionUID = 1L;
 
     public STSException() {

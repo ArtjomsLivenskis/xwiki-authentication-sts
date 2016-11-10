@@ -64,6 +64,9 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 	private static Map<String, String> userMappings;
 	// private static XWikiSTSAuthenticatorProperties props = new
 	// XWikiSTSAuthenticatorProperties();
+	/** 
+	 * props - 
+	 */
 	private static Props props = new Props();
 
     /**

@@ -14,8 +14,14 @@ import org.opensaml.xml.ConfigurationException;
  */
 public class STSErrorCollector {
 
+	/**
+     * List of Throwable objects to store current errors
+     */
 	private List<Throwable> errorList;
 
+	/**
+     * Contructor - is making a 
+     */
 	public STSErrorCollector() {
 		errorList = new ArrayList<Throwable>();
 	}
