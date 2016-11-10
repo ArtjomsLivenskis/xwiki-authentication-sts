@@ -55,7 +55,10 @@ import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 /**
  * Authentication based on Trust Security Token Service. Some parameters can be
- * used to customized its behavior in xwiki.cfg
+ * used to customized its behavior in xwiki.cfg.
+ * Based on context - is showingLogin, can return XWiki User object according to
+ * context parametr. Implements XWiki - authentication and have methods to show login
+ * and everything this is making according the context. 
  * 
  * @version 1.0
  */

@@ -93,7 +93,7 @@ import org.xml.sax.SAXException;
 */
 /**
  * Validates STSToken
- * Have main method validate to validate token and have some utility private methods helping to
+ * Have main method which, validates token and have some utility private methods helping to
  * validation process
  * 
  * @version 1.0
@@ -177,7 +177,10 @@ public class  STSTokenValidator {
 	}
 	
     /**
-     * validate - Validate Token
+     * validate - Validate Token. It's taking envelopedToken as a parameter. This token - is a token
+     * which is recived to this method - from VRA. And checks it's trust level using utility
+     * method of this class. It uses some additional methods implemented in this class. 
+     * And mothods from other auxiliary classes.
      * 
      * @param envelopedToken String
      * @return List<STSClaim> 
@@ -298,7 +301,7 @@ public class  STSTokenValidator {
      * Function is getting samlResponse String - 
      * SAML - Object is object of Security Assertion Markup Languages type is an XML-based, 
      * open-standard data format for exchanging authentication and authorization data between parties
-     * And is returning SignableSAMLObject on success or throws exception on fault
+     * And is returning SignableSAMLObject on success or throws exception on fault.
      *      
      * @param samlResponse - SAML Text Response (String)
      * 
@@ -316,17 +319,19 @@ public class  STSTokenValidator {
 		org.opensaml.saml2.core.Response response = (org.opensaml.saml2.core.Response) unmarshaller
 				.unmarshall(document.getDocumentElement());
 		SignableSAMLObject samlToken = (SignableSAMLObject) response.getAssertions().get(0);
-
 		return samlToken;
 	}
 	
     /**
-     * getSamlTokenFromRstr (String rstr) - get SAML Token from some XML Document
-     * 
+     * getSamlTokenFromRstr (String rstr) - get SAML Token from some XML Document.
+     * First of all - there is creating a document from rstr - parametr - then - 
+     * it is parsing it to extract a SingableSAMLObject.
+     * it is using try/catch construction and throws new STSException("SAML token was not found");
+     * if can't find SAML token.
+     *  
      * @param rstr - String -  XML - Document's string from which will be extracted an information of a SamlToken
      * @return SignableSAMLObject - an instance of SAMLObject (Security Assertion Markup Language) 
-     * @throws ParserConfigurationException, SAXException, IOException, UnmarshallingException, STSException
-     * 
+     * @throws ParserConfigurationException, SAXException, IOException, UnmarshallingException, STSException 
      */
 	private static SignableSAMLObject getSamlTokenFromRstr(String rstr)
 			throws ParserConfigurationException, SAXException, IOException, UnmarshallingException, STSException {
@@ -355,13 +360,14 @@ public class  STSTokenValidator {
 	
     
     /**
-     * Function gets AudienceUri String from org.opensaml.saml1.core.Assertion samlAssertion
+     * Function gets AudienceUri String from org.opensaml.saml1.core.Assertion samlAssertion.
      * 
      * @param samlAssertion - A Security Assertion Markup Language (SAML) authorization assertion contains 
      * @return String AudienceUri - extracted from samlAssertion.getConditions().getAudienceRestrictionConditions().get(0)
 	 *	.getAudiences().get(0);
      * 
      */
+	
 	private static String getAudienceUri(org.opensaml.saml1.core.Assertion samlAssertion) {
 		org.opensaml.saml1.core.Audience audienceUri = samlAssertion.getConditions().getAudienceRestrictionConditions()
 				.get(0).getAudiences().get(0);
@@ -394,9 +400,12 @@ public class  STSTokenValidator {
 	 /**
      * validateToken(SignableSAMLObject samlToken)
      * Validates Token from SAMLlObject - returns boolen
+     * Validates Token - exitracting sertificate from samlToken.
+     * And validates it. Returning true or false according on validation results.
      * @param samlToken SignableSAMLObject
      * @return boolean valid => true, not valid => false
      */
+	
 	private static boolean validateToken(SignableSAMLObject samlToken) throws SecurityException, ValidationException,
 			ConfigurationException, UnmarshallingException, CertificateException, KeyException {
 
@@ -530,7 +539,7 @@ public class  STSTokenValidator {
 		return claims;
 	}
 	
-    /*
+    /**
     * getValueFrom(List<XMLObject> attributeValues)
     * Gets all atribute's values from a list of XML objects
     * @param attributeValues List<XMLObject>

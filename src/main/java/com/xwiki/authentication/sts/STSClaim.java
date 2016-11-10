@@ -27,7 +27,12 @@ package com.xwiki.authentication.sts;
 import java.io.Serializable;
 
 /**
- * Class to hold and get/set STS Claim data in a Serializable way
+ * Class to hold and get/set STS Claim data in a Serializable way. Clain values are coma seperated
+ * and you can add prepared comma seperated string sontaining Strings. It's a bottleneck
+ * because can make addClaim - method which will add new Claim to Serializable object.\
+ * 
+ * You can get claim values using  public String[] getClaimValues()  method, which is gettig values spllitting claimValue string
+ * with "," - decliminer. 
  * 
  * @version 1.0
  */

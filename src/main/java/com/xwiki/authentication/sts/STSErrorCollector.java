@@ -8,7 +8,10 @@ import org.opensaml.xml.ConfigurationException;
 
 /**
  * STSErrorCollector - Class - saves - Throwable objects in List. 
- * And have method to list saved errors.
+ * Have method to convert to string saved errors (listErrors()).
+ * Have errorList, which is ArrayList<Throwable> in which are stored Errors.
+ * You can easily add Throwable objects with void addError(Object obj). If will
+ * be passed non-Throwable object to method - nothing will happen.
  * 
  * @version 1.0
  */

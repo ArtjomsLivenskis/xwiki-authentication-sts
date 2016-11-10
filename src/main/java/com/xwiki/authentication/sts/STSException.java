@@ -26,6 +26,9 @@ package com.xwiki.authentication.sts;
 
 /**
  * Class containing STSException class extends Exception. This is just a name for STS Exception.
+ * It is just a cap. It does not doing something special. Have unical version UID - 1L - to avoid
+ * object's version mismatches in future.
+ * 
  * 
  * @version 1.0
  */
