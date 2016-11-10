@@ -65,7 +65,7 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 	// private static XWikiSTSAuthenticatorProperties props = new
 	// XWikiSTSAuthenticatorProperties();
 	/** 
-	 * props - 
+	 * props - Props Variable - Holding method to load Certificate from file
 	 */
 	private static Props props = new Props();
 
@@ -149,7 +149,6 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
     /**
      * checkSTSResponse - Check Response of (Security Token Service)  
      * This method is trying to create document using XWikiContext context argument and checking is it done or not? 
-     * 
      * @param context XWikiContext - XWikiContext to check is it have right data
      * @return boolen - true - if check - ok, false - fault to create doc from test data etc.
      * @throws XWikiException java.lang.Object extended by java.lang.Throwable </br> extended by java.lang.Exception extended by com.xpn.xwiki.XWikiException
