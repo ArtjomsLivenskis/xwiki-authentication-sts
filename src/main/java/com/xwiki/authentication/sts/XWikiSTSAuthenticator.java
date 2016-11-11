@@ -52,16 +52,38 @@ import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 /**
  * Authentication based on Trust Security Token Service. Some parameters can be
- * used to customized its behavior in xwiki.cfg
+ * used to customized its behavior in xwiki.cfg.
+ * Based on context - is showingLogin, can return XWiki User object according to
+ * context parametr. Implements XWiki - authentication and have methods to show login
+ * and everything this is making according the context. 
  * 
  * @version $Id$
  */
 public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
+	/** 
+	 * props - Props Variable - Holding method to load Certificate from file
+	 */
 	private static Log log = LogFactory.getLog(XWikiSTSAuthenticator.class);
+	/**
+	* Holds the mapping between HTTP header fields names and XWiki user
+	*/
 	private static Map<String, String> userMappings;
+	/** 
+	 * props - Props Variable - Holding method to load Certificate from file
+	 */
 	private static Props props = new Props();
+	/**
+	*  Error collector - collecting errors in a List. Converting to strings
+	*/
 	private STSErrorCollector errorCollector = new STSErrorCollector();
-
+	
+	 /**
+     * showLogin - Makes appropriate url and sends request to the STS (Security Token Service)  
+     * and gets response with xwiki methods.
+     * 
+     * @param context XWikiContext - context - to make request and show login
+     * @throws XWikiException java.lang.Object extended by java.lang.Throwable </br> extended by java.lang.Exception extended by com.xpn.xwiki.XWikiException
+     */
 	@Override
 	public void showLogin(XWikiContext context) throws XWikiException {
 		log.trace("showLogin()");
@@ -137,14 +159,14 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		}
 
 	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
+	
+	 /**
+     * checkSTSResponse - Check Response of (Security Token Service)  
+     * This method is trying to create document using XWikiContext context argument and checking is it done or not? 
+     * @param context XWikiContext - XWikiContext to check is it have right data
+     * @return boolen - true - if check - ok, false - fault to create doc from test data etc.
+     * @throws XWikiException java.lang.Object extended by java.lang.Throwable </br> extended by java.lang.Exception extended by com.xpn.xwiki.XWikiException
 	 * @throws ConfigurationException
-	 * @throws
-	 * 
-	 * @see com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkSTSResponse(com.xpn.xwiki.XWikiContext)
 	 */
 	public boolean checkSTSResponse(XWikiContext context) throws XWikiException {
 		// read from STSResponse
@@ -461,9 +483,14 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
+    /**
+     * checkAuth - Checks authentification session in cookies. If there is data about current user
+     * returns it. If there is not an authentification data - then method is trying to login
+     * using methadata creating new XWiki Object.
+     * 
+     * @param context XWikiContext - context of XWiki Engine
+     * @throws XWikiUser java.lang.Object extended by java.lang.Throwable </br> extended by java.lang.Exception extended by com.xpn.xwiki.XWikiException
+     *
 	 * @see com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkAuth(com.xpn.xwiki.XWikiContext)
 	 */
 	@Override
@@ -539,13 +566,30 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		}
 	}
 
+    /**
+     * getter to get authField (value) from XWikiContext
+     * 
+     * @param context XWikiContext - context of XWiki Engine
+     * @throws XWikiUser java.lang.Object extended by java.lang.Throwable </br> extended by java.lang.Exception extended by com.xpn.xwiki.XWikiException
+     *
+	 * @see com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkAuth(com.xpn.xwiki.XWikiContext)
+	 */
 	private String getAuthFieldValue(XWikiContext context) {
 		String val = (String) context.getRequest().getSession(true)
 				.getAttribute(props.getAuthField(context));
 		log.trace("getAuthFieldValue(): " + val);
 		return val;
 	}
-
+	
+    /**
+     * getExtendedInformation 
+     * Get Extended Information from context according to data parameter
+     * 
+     * @param data Map - data acccording which - will be extracted extended information
+     * @param context XWikiContext - context to get data from
+     * @return mapped information in format Map<String, String> 
+	 * @see com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkAuth(com.xpn.xwiki.XWikiContext)
+	 */
 	private Map<String, String> getExtendedInformation(Map data,
 			XWikiContext context) {
 		log.trace("ExtendedInformation()");
@@ -573,6 +617,14 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		return userFields.split(",");
 	}
 
+    /**
+     * generateXWikiUsername(Map userData, XWikiContext context)
+     * generate username according to XWikiContext and userData fields
+     * @param userData Map - data acccording which - will be extracted extended information
+     * @param context XWikiContext - context to get data from
+     * @return userName String
+	 * @see com.xpn.xwiki.user.impl.xwiki.AppServerTrustedAuthServiceImpl#checkAuth(com.xpn.xwiki.XWikiContext)
+	 */
 	private String generateXWikiUsername(Map userData, XWikiContext context) {
 		log.trace("generateXWikiUsername()");
 		String[] userFields = getXWikiUsernameRule(context);
@@ -616,6 +668,9 @@ public class XWikiSTSAuthenticator extends XWikiAuthServiceImpl {
 		return userMappings;
 	}
 
+	/**
+	 * Put listed errors into log
+	 */
 	public void listErrors() {
 		log.info(errorCollector.listErrors());
 		errorCollector.clearErrorList();

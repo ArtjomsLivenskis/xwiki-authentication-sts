@@ -93,24 +93,71 @@ import org.xml.sax.SAXException;
  > xwiki.authentication.sts.subject_dns=EMAILADDRESS=cisu.help@vraa.gov.lv, CN=VISS.LVP.STS, OU=VPISD, O=VRAA, L=Riga, ST=Riga, C=LV
  */
 
+/**
+ * Validates STSToken
+ * Have main method which, validates token and have some utility private methods helping to
+ * validation process
+ * 
+ * @version 1.0
+ */
 @SuppressWarnings("deprecation")
 public class STSTokenValidator {
+	/**
+     * Log log - log - from LogFactory 
+     */
 	private static Log log = LogFactory.getLog(STSTokenValidator.class);
+	/**
+     * max ClockSkew - using to check time intervals / Before / After as a deviation
+     */
 	private int maxClockSkew;
+	/**
+     * max ClockSkew - max time interval in which may be a value
+     */
 	private List<String> trustedSubjectDNs;
+	/**
+     * max ClockSkew - http/https urls - 
+     */
 	private List<URI> audienceUris;
+	/**
+     * max ClockSkew - http/https urls - 
+     */
 	private boolean validateExpiration = true;
+	/**
+	* entityId - ID of the entity used for set entity id of the sertificate
+	*/
 	private static String entityId;
+	/**
+	* IssuerDN value from the certificate (will be extracted from samlToken)
+	*/
 	private String issuerDN;
+	/**
+	 * context - containng data for validation
+	 */
 	private String context;
+	/** 
+	 * Name of Issuer DN - getIssuerDN
+	 */
 	private String issuer;
+	/** 
+	 * Name of Issuer DN - getIssuerDN
+	 */
 	X509Certificate certificate;
+	/** 
+	 * Collecting errors in Array - save, convert to string error list. Checking if passed object is Throwable class or something else.
+	 */
 	STSErrorCollector errorCollector;
 
 	public STSTokenValidator() throws ConfigurationException {
 		this(new ArrayList<String>(), new ArrayList<URI>());
 	}
 
+	/**
+	 * <b>STSTokenValidator</b> - constructor for making  STSTokenValidator
+	 *
+	 * @param trustedSubjectDNs List<String>,
+	 * @param audienceUris List<URI>
+	 * @throws ConfigurationException - exception of open SAML's configuration
+	 */
 	public STSTokenValidator(List<String> trustedSubjectDNs,
 			List<URI> audienceUris) throws ConfigurationException {
 		super();
@@ -135,6 +182,17 @@ public class STSTokenValidator {
 		entityId = value;
 	}
 
+		
+    /**
+     * validate - Validate Token. It's taking envelopedToken as a parameter. This token - is a token
+     * which is recived to this method - from VRA. And checks it's trust level using utility
+     * method of this class. It uses some additional methods implemented in this class. 
+     * And mothods from other auxiliary classes.
+     * 
+     * @param envelopedToken String
+     * @return List<STSClaim> 
+     * @throws ParserConfigurationException, SAXException, IOException, STSException, ConfigurationException, CertificateException, KeyException, SecurityException, ValidationException, UnmarshallingException, URISyntaxException, NoSuchAlgorithmException
+     */
 	public List<STSClaim> validate(String envelopedToken)
 			throws ParserConfigurationException, SAXException, IOException,
 			STSException, ConfigurationException, CertificateException,
@@ -281,6 +339,21 @@ public class STSTokenValidator {
 		return claims;
 	}
 
+	/**
+     * getSamlTokenFromSamlResponse (String samlResponse)
+     * 
+     * Function is getting samlResponse String - 
+     * SAML - Object is object of Security Assertion Markup Languages type is an XML-based, 
+     * open-standard data format for exchanging authentication and authorization data between parties
+     * And is returning SignableSAMLObject on success or throws exception on fault.
+     *      
+     * @param samlResponse - SAML Text Response (String)
+     * 
+     * @return SignableSAMLObject (Security Assertion Markup Language) 
+     * @throws ParserConfigurationException - Indicates a serious configuration error,
+     * @throws SAXException - Encapsulate a general SAX error or warning, IOException, 
+     * @throws UnmarshallingException - thrown whenever an IOException is thrown during the unmarshalling process of request/response from the wire. 
+     */
 	private static SignableSAMLObject getSamlTokenFromSamlResponse(
 			String samlResponse) throws ParserConfigurationException,
 			SAXException, IOException, UnmarshallingException {
@@ -293,6 +366,17 @@ public class STSTokenValidator {
 		return response.getAssertions().get(0);
 	}
 
+	 /**
+     * getSamlTokenFromRstr (String rstr) - get SAML Token from some XML Document.
+     * First of all - there is creating a document from rstr - parametr - then - 
+     * it is parsing it to extract a SingableSAMLObject.
+     * it is using try/catch construction and throws new STSException("SAML token was not found");
+     * if can't find SAML token.
+     *  
+     * @param rstr - String -  XML - Document's string from which will be extracted an information of a SamlToken
+     * @return SignableSAMLObject - an instance of SAMLObject (Security Assertion Markup Language) 
+     * @throws ParserConfigurationException, SAXException, IOException, UnmarshallingException, STSException 
+     */
 	private static SignableSAMLObject getSamlTokenFromRstr(String rstr)
 			throws ParserConfigurationException, SAXException, IOException,
 			UnmarshallingException, STSException {
@@ -319,6 +403,14 @@ public class STSTokenValidator {
 		}
 	}
 
+	 /**
+     * Function gets AudienceUri String from org.opensaml.saml1.core.Assertion samlAssertion.
+     * 
+     * @param samlAssertion - A Security Assertion Markup Language (SAML) authorization assertion contains 
+     * @return String AudienceUri - extracted from samlAssertion.getConditions().getAudienceRestrictionConditions().get(0)
+	 *	.getAudiences().get(0);
+     * 
+     */
 	private static String getAudienceUri(
 			org.opensaml.saml1.core.Assertion samlAssertion) {
 		org.opensaml.saml1.core.Audience audienceUri = samlAssertion
@@ -329,6 +421,15 @@ public class STSTokenValidator {
 		return audienceUriStr;
 	}
 
+	 /**
+     * checkExpiration(Instant notBefore, Instant notOnOrAfter)
+     * Function checks that date now is after (notBefore parameter)
+     * and now is before notOnOrAfter (calculating Skew - which is new Duration(this.maxClockSkew) object )
+     *      
+     * @param notBefore  Instant now is after not Before (plus skew)
+     * @param notOnOrAfter Instant now is before notOnOrAfter (minus skew)
+     * @return true - if check  - is ok, or false if check is fault
+     */
 	private boolean checkExpiration(Instant notBefore, Instant notOnOrAfter) {
 		Instant now = new Instant();
 		Duration skew = new Duration(maxClockSkew);
@@ -343,6 +444,14 @@ public class STSTokenValidator {
 		return false;
 	}
 
+	/**
+     * validateToken(SignableSAMLObject samlToken)
+     * Validates Token from SAMLlObject - returns boolen
+     * Validates Token - exitracting sertificate from samlToken.
+     * And validates it. Returning true or false according on validation results.
+     * @param samlToken SignableSAMLObject
+     * @return boolean valid => true, not valid => false
+     */
 	private static boolean validateToken(SignableSAMLObject samlToken)
 			throws SecurityException, ValidationException,
 			ConfigurationException, UnmarshallingException,
@@ -419,6 +528,13 @@ public class STSTokenValidator {
 		return engine.validate(signature, criteriaSet);
 	}
 
+	/**
+    * validateSubjectDN(SignableSAMLObject samlToken, String subjectName)
+    * Validates the subject (subject distinguished name) value from the certificate. 
+    * @param samlToken SignableSAMLObject saml Token
+    * @param subjectName subjectNamme name to Validate
+    * @return boolean valid => true, not valid => false
+    */
 	private static boolean validateSubjectDN(SignableSAMLObject samlToken,
 			String subjectName) throws UnmarshallingException,
 			ValidationException, CertificateException {
@@ -430,7 +546,15 @@ public class STSTokenValidator {
 				+ "' certificate SubjectDN: '" + subjectDN);
 		return subjectDN.equals(subjectName);
 	}
-
+	
+	/**
+    * validateIssuerDN(SignableSAMLObject samlToken, String subjectName)
+    * Validates IssuerDN value from the certificate (extracted from samlToken). 
+    * @param samlToken SignableSAMLObject - saml Token
+    * @param issuerName issuer name validate to
+    * @return valid  boolean => true, not valid => false
+    * @throws UnmarshallingException, ValidationException, CertificateException 
+    */
 	private static boolean validateIssuerDN(SignableSAMLObject samlToken,
 			String issuerName) throws UnmarshallingException,
 			ValidationException, CertificateException {
@@ -443,7 +567,15 @@ public class STSTokenValidator {
 				+ "' certificate IssuerDN: '" + issuer + "'");
 		return issuer.equals(issuerName);
 	}
-
+	
+	/**
+    * getClaims(org.opensaml.saml1.core.Assertion samlAssertion)
+    * Get's List of STSClaims according to samlAssertion
+    * @param samlAssertion org.opensaml.saml1.core.Assertion
+    * @return ArrayList<STSClaim> (Claims-based identity is a common way for applications to acquire the identity information they need about users inside their organization)
+    * @throws SecurityException, ValidationException, ConfigurationException, UnmarshallingException, CertificateException, KeyException
+    * @throws UnmarshallingException, ValidationException, CertificateExceptio @throws UnmarshallingException, ValidationException, CertificateException n 
+    */
 	private static List<STSClaim> getClaims(
 			org.opensaml.saml1.core.Assertion samlAssertion)
 			throws SecurityException, ValidationException,
@@ -470,6 +602,12 @@ public class STSTokenValidator {
 		return claims;
 	}
 
+	/**
+    * getValueFrom(List<XMLObject> attributeValues)
+    * Gets all atribute's values from a list of XML objects
+    * @param attributeValues List<XMLObject>
+    * @return buffer.toString() - converted to string buffer of XML attribute's values
+    */
 	private static String getValueFrom(List<XMLObject> attributeValues) {
 
 		StringBuilder buffer = new StringBuilder();
@@ -483,6 +621,12 @@ public class STSTokenValidator {
 		return buffer.toString();
 	}
 
+	/**
+    * getDocument(String doc)
+    * Parse document from string
+    * @param doc String string containing info for document builder parser
+    * @return Document - parsed from input string document 
+    */
 	private static Document getDocument(String doc)
 			throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -491,6 +635,13 @@ public class STSTokenValidator {
 		return documentbuilder.parse(new InputSource(new StringReader(doc)));
 	}
 
+	/**
+    * getAttrVal(String envelopedToken, String element, String attribute)
+    * Gets value of Document value contained in evelopedToken
+    * @param element String element to get value for
+    * @param attribute String attribute to get value for
+    * @return value String of element's attribute
+    */
 	private String getAttrVal(String envelopedToken, String element,
 			String attribute) throws ParserConfigurationException,
 			SAXException, IOException {
@@ -499,6 +650,14 @@ public class STSTokenValidator {
 				.getNamedItem(attribute).getNodeValue();
 	}
 
+	/**
+    * getElementVal(String envelopedToken, String element)
+    * Gets value of Document value contained in evelopedToken
+    * @param element String  element to get value for
+    * @param envelopedToken enveloped Token
+    * @throws throws ParserConfigurationException, SAXException, IOException 
+    * @return String - value of element's attribute
+    */
 	private String getElementVal(String envelopedToken, String element)
 			throws ParserConfigurationException, SAXException, IOException {
 		Document doc = getDocument(envelopedToken);
@@ -525,6 +684,12 @@ public class STSTokenValidator {
 		this.certificate = cert;
 	}
 
+	/**
+    * X509Certificate certFromToken(SignableSAMLObject token)
+    * @param token SignableSAMLObject input token with sertificate inside
+    * @throws throws ParserConfigurationException, SAXException, IOException 
+    * @return X509Certificate - certificate extracted from SAMLToken
+    */
 	private static X509Certificate certFromToken(SignableSAMLObject token) {
 		try {
 			return KeyInfoHelper.getCertificates(
@@ -535,6 +700,9 @@ public class STSTokenValidator {
 		}
 	}
 
+	/**
+    * Activizate STSErrorCollector - for error preserving
+    */
 	public void setSTSErrorCollector(STSErrorCollector errorCollector) {
 		this.errorCollector = errorCollector;
 	}

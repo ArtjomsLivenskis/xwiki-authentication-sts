@@ -24,7 +24,19 @@
 
 package com.xwiki.authentication.sts;
 
+/**
+ * Class containing STSException class extends Exception. This is just a name for STS Exception.
+ * It is just a cap. It does not doing something special. Have unical version UID - 1L - to avoid
+ * object's version mismatches in future.
+ * 
+ * 
+ * @version 1.0
+ */
 public class STSException extends Exception {
+	/**
+	* Static final long - serialVersionUID - Version UID - to make it easy to check objects version
+	* control without any differences between UIDs
+	*/
     private static final long serialVersionUID = 1L;
 
     public STSException() {

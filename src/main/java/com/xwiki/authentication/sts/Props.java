@@ -9,11 +9,32 @@ import java.security.cert.X509Certificate;
 
 import com.xpn.xwiki.XWikiContext;
 
+/**
+ * This class have only one method which is loading certificate from filename in 
+ * xwiki.authentication.sts.cert_filename METHADATA. 
+ * It is using to load - serificate from file opposite to first implemented method,
+ * which was loading certificate from metadata. It trays to find filename stored in
+ * xwiki.authentication.sts.cert_filename and then to load it. If succeed - returns X509Certificate
+ * else returns null value. Class extends XWikiSTSAuthenticatorProperties to add getCertificate
+ * to standart implamentation.
+ * 
+ * @version 1.0
+ */
+
 class Props extends XWikiSTSAuthenticatorProperties {
 
 	X509Certificate getCertificate(XWikiContext context) {
+	    /**
+		* filename - String contaings loaded from "xwiki.authentication.sts.cert_filename" parametr
+		*/
 		String filename = null;
+		/**
+		* File Input stream - to read our certificate
+		*/
 		FileInputStream fr = null;
+		/**
+		* cert - X509Certificate - hold some context
+		*/
 		X509Certificate cert = null;
 		try {
 			filename = context.getWiki().Param(
